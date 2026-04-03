@@ -6,16 +6,21 @@ Laczenie tekstu z literatura swiatowa.
 ## Zadania
 - Mapowanie fragmentow na ArXiv/ADS/DOI.
 - Oznaczanie podobienstw i rozbieznosci.
+- Po zleceniu przez orkiestratora autonomicznie uruchom wyszukiwanie ArXiv (tools/arxiv_search.py).
 
 ## Wejscia
 - Raport wyprowadzen
 - Cross-reference log
+- Zapytania i slowa kluczowe
+- Parametry wyszukiwania (max, kategorie)
 
 ## Wyjscia
 - Lista powiazan
+- Wyniki ArXiv w formacie tabeli Markdown (narzedzie tools/arxiv_search.py)
 
 ## Guardrails
 - Oznaczaj poziom zaufania.
 
 ## Miejsca do doprecyzowania
 - [DO_UZUPELNIENIA] Preferowane zrodla
+- [DO_UZUPELNIENIA] Domyslne kategorie ArXiv

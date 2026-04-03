@@ -337,6 +337,8 @@ LTR zaklada, ze podstawowe wyprowadzenia i argumenty teoretyczne sa tworzone jak
 
 ```text
 DECISIONS.md
+README.md
+requirements.txt
 Dokumentacja/
   Zalozenia-Srodowisko-Fizyka.md
   Szablon-Fizyka/
@@ -354,12 +356,20 @@ Dokumentacja/
     Mapa-Notacji-LTR.md
     Cross-Reference-Log-LTR.md
 .github/
+  copilot-instructions.md
   agents/
     research-orkiestrator.agent.md
     physics-discovery.agent.md
     model-review.agent.md
+    simulation-experiment.agent.md
     data-quality.agent.md
     statistics-review.agent.md
+    risk-compliance.agent.md
+    artifact-quality.agent.md
+    knowledge-repo.agent.md
+    formal-consistency.agent.md
+    cross-reference.agent.md
+    socratic-mentor.agent.md
   prompts/
     kickoff-badania.prompt.md
     review-jakosci-badania.prompt.md

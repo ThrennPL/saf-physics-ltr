@@ -1,1 +1,10 @@
 pypdf
+sympy
+bibtexparser
+networkx
+pillow
+pytesseract
+arxiv
+chromadb
+crossrefapi
+graphviz
