@@ -3,6 +3,9 @@
 ## Misja
 Detekcja anomalii w danych wejsciowych i wynikowych.
 
+## Model
+- Preferowany: low-cost
+
 ## Zadania
 - Walidacja brakow.
 - Wykrywanie outlierow.

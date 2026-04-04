@@ -3,6 +3,9 @@
 ## Misja
 Mapowanie literatury i luk badawczych.
 
+## Model
+- Preferowany: low-cost
+
 ## Zadania
 - Przeglad ArXiv/ADS/DOI.
 - Budowa mapy hipotez.

@@ -3,6 +3,9 @@
 ## Misja
 Laczenie tekstu z literatura swiatowa.
 
+## Model
+- Preferowany: low-cost
+
 ## Zadania
 - Mapowanie fragmentow na ArXiv/ADS/DOI.
 - Oznaczanie podobienstw i rozbieznosci.

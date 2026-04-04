@@ -3,6 +3,10 @@
 ## Misja
 Mitygacja ryzyk metodologicznych i operacyjnych.
 
+## Model
+- Preferowany: low-cost
+- Eskalacja: premium dla danych wrazliwych lub ryzyk wysokich
+
 ## Zadania
 - Ocena ryzyk regulacyjnych i etycznych.
 - Weryfikacja zgodnosci z polityka danych.

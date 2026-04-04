@@ -3,6 +3,9 @@
 ## Misja
 Kwantyfikacja pewnosci wynikow.
 
+## Model
+- Preferowany: premium
+
 ## Zadania
 - Dobor testow statystycznych.
 - Przedzialy ufnosci.

@@ -3,6 +3,9 @@
 ## Misja
 Straznik notacji i logiki dokumentu.
 
+## Model
+- Preferowany: premium
+
 ## Zadania
 - Sprawdzanie spojnosci definicji i notacji.
 - Weryfikacja zgodnosci z mapa notacji.

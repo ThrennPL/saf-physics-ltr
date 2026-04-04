@@ -3,6 +3,9 @@
 ## Misja
 Pamiec instytucjonalna i reuse.
 
+## Model
+- Preferowany: low-cost
+
 ## Zadania
 - Indeksowanie wynikow.
 - Wykrywanie duplikacji.

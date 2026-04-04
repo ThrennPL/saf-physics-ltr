@@ -1,0 +1,27 @@
+{
+  "default": "low-cost",
+  "escalation_rules": [
+    {
+      "condition": "gate in [3,4]",
+      "model": "premium"
+    },
+    {
+      "condition": "risk == 'high'",
+      "model": "premium"
+    }
+  ],
+  "agent_overrides": {
+    "research-orkiestrator": "low-cost",
+    "physics-discovery": "low-cost",
+    "model-review": "premium",
+    "simulation-experiment": "low-cost",
+    "data-quality": "low-cost",
+    "statistics-review": "premium",
+    "risk-compliance": "low-cost",
+    "artifact-quality": "premium",
+    "knowledge-repo": "low-cost",
+    "formal-consistency": "premium",
+    "cross-reference": "low-cost",
+    "socratic-mentor": "low-cost"
+  }
+}

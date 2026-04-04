@@ -3,6 +3,9 @@
 ## Misja
 Projektowanie weryfikacji numerycznej dla teorii.
 
+## Model
+- Preferowany: low-cost
+
 ## Zadania
 - Proponowanie scenariuszy testowych.
 - Dobor parametrow dla symulacji.

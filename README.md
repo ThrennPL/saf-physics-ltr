@@ -59,3 +59,13 @@ Proste wyszukiwanie ArXiv i wynik w tabeli Markdown:
 ```bash
 python tools/arxiv_search.py "CPT violation" --max 10 --cat hep-th
 ```
+
+## Routing modelu
+Routing modeli dla agentow:
+
+```bash
+python tools/route_model.py cross-reference
+python tools/route_model.py model-review --gate 3
+```
+
+Konfiguracja w tools/model_routing.json.

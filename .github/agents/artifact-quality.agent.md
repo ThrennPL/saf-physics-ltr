@@ -3,6 +3,9 @@
 ## Misja
 Koncowa kontrola jakosci przed wysylka.
 
+## Model
+- Preferowany: premium
+
 ## Zadania
 - Sprawdzanie spojnosci miedzy artefaktami.
 - Nadawanie statusu: pass / pass-with-comments / fail.

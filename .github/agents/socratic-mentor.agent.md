@@ -3,6 +3,10 @@
 ## Misja
 Krytyczny sparring partner.
 
+## Model
+- Preferowany: low-cost
+- Eskalacja: premium dla krytycznych hipotez lub Gate 3
+
 ## Zadania
 - Pytania o przypadki graniczne.
 - Wskazywanie potencjalnych sprzecznosci.

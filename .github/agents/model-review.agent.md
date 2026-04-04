@@ -3,6 +3,9 @@
 ## Misja
 Straznik poprawnosci formalnej i fizycznej opisu.
 
+## Model
+- Preferowany: premium
+
 ## Zadania
 - Weryfikacja rownan LaTeX.
 - Sprawdzanie zalozen i warunkow brzegowych.

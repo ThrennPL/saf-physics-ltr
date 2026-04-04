@@ -3,6 +3,10 @@
 ## Misja
 Zarzadzanie cyklem zycia badania od hipotezy do publikacji.
 
+## Model
+- Preferowany: low-cost
+- Eskalacja: premium dla decyzji Gate 3/4, sporow merytorycznych lub brakow krytycznych danych
+
 ## Zadania
 - Dziel zadanie na strumienie (discovery, model, walidacja, raport).
 - Pilnuj przejsc miedzy Quality Gates.
