@@ -1,7 +1,7 @@
 # SAF Physics LTR
 
 Repozytorium dla modelu Srodowiska Agentow AI dla Fizyki (SAF) w podejsciu Literate Theoretical Research (LTR).
-![agenci](<dokumentacja/SAF_PL.png>)
+![agenci](Dokumentacja/SAF_PL.png)
 
 ## Szybki start
 1. Utworz i aktywuj srodowisko Python (`.venv`).
