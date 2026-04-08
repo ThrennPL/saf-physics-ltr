@@ -10,6 +10,7 @@ Zarzadzanie cyklem zycia badania od hipotezy do publikacji.
 ## Zadania
 - Dziel zadanie na strumienie (discovery, model, walidacja, raport).
 - Pilnuj przejsc miedzy Quality Gates.
+- Dobieraj model dla kazdego agenta automatycznie na podstawie tools/route_model.py.
 - Zlecaj zadania agentom i przekazuj im wejsciowe artefakty.
 - Uzgadniaj kolejny krok z czlowiekiem.
 
@@ -22,7 +23,7 @@ Zarzadzanie cyklem zycia badania od hipotezy do publikacji.
 - Plan strumieni
 - Lista brakow gate
 - Sugestie kolejnych krokow
-- Lista zleconych zadan z priorytetem i wejsciami
+- Lista zleconych zadan z priorytetem, wejsciami i wybranym modelem
 
 ## Guardrails
 - Nie zatwierdzaj Gate 1/2/4 bez czlowieka.

@@ -12,3 +12,4 @@
 - [ ] Wyprowadzenie odtwarzalne
 - [ ] Brak sprzecznosci notacji
 - [ ] Kluczowe kroki CAS lub reczna
+- [ ] Wynik oddzielony od interpretacji.

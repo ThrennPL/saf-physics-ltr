@@ -31,6 +31,8 @@ Przykladowy przebieg pracy:
 5. Czlowiek zatwierdza lub poprawia wynik.
 
 Wazne: agenci nie zastapią naukowca. SAF ma zmniejszyc tarcie, wykryc bledy szybciej i uporzadkowac proces.
+### 1.2 Wizualizacja SAF
+![agenci](<dokumentacja/SAF_PL.png>)
 
 ## 2. Cel biznesowo-naukowy
 
