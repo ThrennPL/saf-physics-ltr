@@ -10,10 +10,12 @@ Straznik poprawnosci formalnej i fizycznej opisu.
 - Weryfikacja rownan LaTeX.
 - Sprawdzanie zalozen i warunkow brzegowych.
 - Weryfikacja spojnosci notacji.
+- Ocena zalozen i uproszczen z Experiment Context Pack.
 
 ## Wejscia
 - Raport wyprowadzen
 - Mapa notacji
+- Experiment Context Pack (teoretyczna)
 
 ## Wyjscia
 - Lista niespojnosci
@@ -26,3 +28,4 @@ Straznik poprawnosci formalnej i fizycznej opisu.
 ## Miejsca do doprecyzowania
 - [DO_UZUPELNIENIA] Zalozenia jednostkowe
 - [DO_UZUPELNIENIA] Krytyczne sekcje
+- [DO_UZUPELNIENIA] Wariant badania

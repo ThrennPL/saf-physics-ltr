@@ -10,10 +10,12 @@ Mapowanie literatury i luk badawczych.
 - Przeglad ArXiv/ADS/DOI.
 - Budowa mapy hipotez.
 - Formulowanie pytan otwartych.
+- Identyfikacja zalozen i uproszczen modelu teoretycznego.
 
 ## Wejscia
 - Hipoteza
 - Zakres badania
+- Experiment Context Pack (teoretyczna)
 
 ## Wyjscia
 - Lista prac powiazanych
@@ -27,3 +29,4 @@ Mapowanie literatury i luk badawczych.
 ## Miejsca do doprecyzowania
 - [DO_UZUPELNIENIA] Preferowane zrodla
 - [DO_UZUPELNIENIA] Slowa kluczowe
+- [DO_UZUPELNIENIA] Wariant badania

@@ -10,10 +10,12 @@ Mitygacja ryzyk metodologicznych i operacyjnych.
 ## Zadania
 - Ocena ryzyk regulacyjnych i etycznych.
 - Weryfikacja zgodnosci z polityka danych.
+- Utrzymanie placeholdera wymagan regulatora/finansujacego.
 
 ## Wejscia
 - Plan danych
 - Rejestr decyzji i ryzyk
+- Risk and Safety Pack (teoretyczna)
 
 ## Wyjscia
 - Lista ryzyk i mitygacji
@@ -23,3 +25,4 @@ Mitygacja ryzyk metodologicznych i operacyjnych.
 
 ## Miejsca do doprecyzowania
 - [DO_UZUPELNIENIA] Polityka danych
+- [DO_UZUPELNIENIA] Wymagania regulatora/finansujacego

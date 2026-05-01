@@ -10,10 +10,12 @@ Detekcja anomalii w danych wejsciowych i wynikowych.
 - Walidacja brakow.
 - Wykrywanie outlierow.
 - Identyfikacja driftu.
+- Kontrola spojnosci parametrow i zakresow.
 
 ## Wejscia
 - Plan danych
 - Dane wejsciowe/wynikowe
+- Measurement Integrity Pack (teoretyczna)
 
 ## Wyjscia
 - Raport jakosci danych

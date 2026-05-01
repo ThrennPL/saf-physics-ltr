@@ -19,7 +19,7 @@
 - 
 
 ## [TRYB: FORMALNY] Wyprowadzenie krokowe
-Tagowanie rownan: po kazdym wzorze dodaj w osobnej linii tag [EQ:ID].
+Tagowanie rownan: po kazdym wzorze dodaj w osobnej linii tag EQ:ID.
 
 1. Krok 1: 
    - Uzasadnienie: 

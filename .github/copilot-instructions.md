@@ -10,8 +10,9 @@ Jezyk: PL. Preferuj ASCII. Markdown-first.
 
 ## Artefakty i formaty
 - Uzywaj formatow z Dokumentacja/Szablon-LTR oraz Dokumentacja/Szablon-Fizyka.
+- Dla fizyki teoretycznej uzywaj pakietow: Experiment Context, Measurement Integrity, Risk and Safety, Reproducibility.
 - Powiazania zapisz w formacie [ID:Typ].
-- Taguj rownania w raportach: po wzorze w osobnej linii dodaj [EQ:ID].
+- Taguj rownania w raportach: po wzorze w osobnej linii dodaj tag w formacie EQ:ID.
 - Nietrywialne kroki oznaczaj [VERIFY-CAS].
 
 ## LTR
@@ -23,6 +24,7 @@ Jezyk: PL. Preferuj ASCII. Markdown-first.
 - Gate 1/2/4: akceptacja tylko czlowiek.
 - Gate 3: mozliwy agent-conditional pass dla niskiego ryzyka i tylko przy statusie pass bez komentarzy krytycznych.
 - Nie zatwierdzaj gate bez czlowieka, z wyjatkiem Gate 3 w trybie agent-conditional pass.
+- Dla fizyki teoretycznej domyslne progi confidence: 0.85/0.70/0.50 (do doprecyzowania w projekcie).
 
 ## Zachowanie modelu
 - Nie halucynuj literatury; oznacz poziom zaufania i preprint vs peer-reviewed.

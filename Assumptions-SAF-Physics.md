@@ -440,7 +440,7 @@ Case-Template/
 - Mitigation: RACI + escalation SLA, blockage log and review.
 
 ### LTR risks (Literate Theoretical Research)
-- Incorrect tagging of equations and artifacts (missing [EQ:ID], invalid [ID:Type]).
+- Incorrect tagging of equations and artifacts (missing EQ:ID, invalid [ID:Type]).
 - Mitigation: template validation, tag lint, Gate 3 checklist.
 - False positive CAS validation or missing boundary conditions.
 - Mitigation: require justification, mark steps unverified, manual review of key steps.

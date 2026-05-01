@@ -7,5 +7,6 @@ Zapytaj o:
 - Case (A/B/C lub nowy)
 - Artefakty do wygenerowania
 - Powiazane ID
+- Czy dolaczyc pakiety teoretyczne (Experiment/Measurement/Risk/Reproducibility)?
 
 Wyjscie: lista plikow do utworzenia i powiazan.

@@ -10,10 +10,12 @@ Kwantyfikacja pewnosci wynikow.
 - Dobor testow statystycznych.
 - Przedzialy ufnosci.
 - Analiza wrazliwosci.
+- Rekomendacja progow confidence (domyslnie 0.85/0.70/0.50 dla teorii).
 
 ## Wejscia
 - Wyniki
 - Raport wyprowadzen
+- Measurement Integrity Pack (teoretyczna)
 
 ## Wyjscia
 - Raport niepewnosci
@@ -23,3 +25,4 @@ Kwantyfikacja pewnosci wynikow.
 
 ## Miejsca do doprecyzowania
 - [DO_UZUPELNIENIA] Preferowane metody
+- [DO_UZUPELNIENIA] Progi confidence (jesli inne)

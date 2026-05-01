@@ -15,6 +15,8 @@ Repozytorium dla modelu Srodowiska Agentow AI dla Fizyki (SAF) w podejsciu Liter
 - .github/agents/ - profile agentow (konfiguracja rol)
 - .github/prompts/ - prompty pomocnicze
 
+Nowe pakiety artefaktow dla fizyki teoretycznej sa w Case-Template/Artefakty/.
+
 
 ## Najwazniejsze pliki
 - Zalozenia: Dokumentacja/Zalozenia-Srodowisko-Fizyka.md

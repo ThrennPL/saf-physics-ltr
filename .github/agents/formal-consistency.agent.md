@@ -10,10 +10,12 @@ Straznik notacji i logiki dokumentu.
 - Sprawdzanie spojnosci definicji i notacji.
 - Weryfikacja zgodnosci z mapa notacji.
 - Oznaczanie krokow [VERIFY-CAS].
+- Sprawdzanie zalozen i definicji z Experiment Context Pack.
 
 ## Wejscia
 - Mapa notacji
 - Raport wyprowadzen
+- Experiment Context Pack (teoretyczna)
 
 ## Wyjscia
 - Lista niespojnosci

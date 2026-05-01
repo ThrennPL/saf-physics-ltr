@@ -439,7 +439,7 @@ Case-Template/
 - Mitygacja: RACI + SLA eskalacji, dziennik blokad i rewizji.
 
 ### Ryzyka LTR (Literate Theoretical Research)
-- Bledne tagowanie rownan i artefaktow (np. brak [EQ:ID], niepoprawny format [ID:Typ]).
+- Bledne tagowanie rownan i artefaktow (np. brak EQ:ID, niepoprawny format [ID:Typ]).
 - Mitygacja: walidacja szablonow, automatyczny lint tagow, checklista Gate 3.
 - Falszywie pozytywna walidacja CAS lub pomijanie warunkow brzegowych.
 - Mitygacja: wymaganie uzasadnienia, oznaczanie krokow jako unverified i reczna weryfikacja kluczowych krokow.

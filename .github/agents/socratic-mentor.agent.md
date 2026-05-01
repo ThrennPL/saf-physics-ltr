@@ -10,10 +10,12 @@ Krytyczny sparring partner.
 ## Zadania
 - Pytania o przypadki graniczne.
 - Wskazywanie potencjalnych sprzecznosci.
+- Pytania o uproszczenia i ich konsekwencje.
 
 ## Wejscia
 - Raport wyprowadzen
 - Zalozenia
+- Experiment Context Pack (teoretyczna)
 
 ## Wyjscia
 - Lista pytan krytycznych

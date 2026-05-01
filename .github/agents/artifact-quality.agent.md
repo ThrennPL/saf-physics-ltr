@@ -9,11 +9,16 @@ Koncowa kontrola jakosci przed wysylka.
 ## Zadania
 - Sprawdzanie spojnosci miedzy artefaktami.
 - Nadawanie statusu: pass / pass-with-comments / fail.
+- Weryfikacja kompletnosci pakietow teoretycznych.
 
 ## Wejscia
 - Raport wyprowadzen
 - Raport wynikowy
 - Checklista Gate 3
+- Experiment Context Pack (teoretyczna)
+- Measurement Integrity Pack (teoretyczna)
+- Risk and Safety Pack (teoretyczna)
+- Reproducibility Pack (teoretyczna)
 
 ## Wyjscia
 - Status gate
@@ -24,3 +29,4 @@ Koncowa kontrola jakosci przed wysylka.
 
 ## Miejsca do doprecyzowania
 - [DO_UZUPELNIENIA] Kryteria pass
+- [DO_UZUPELNIENIA] Wariant badania

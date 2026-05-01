@@ -12,3 +12,9 @@ Lista:
 - Standard-Operacyjny-Research-Design.md
 - Checklista-Research-Gate.md
 - Sekcje-Akceptacje-Decyzje.md
+
+Pakiety artefaktow (fizyka teoretyczna):
+- Experiment-Context-Pack-Teoretyczna.md
+- Measurement-Integrity-Pack-Teoretyczna.md
+- Risk-and-Safety-Pack-Teoretyczna.md
+- Reproducibility-Pack-Teoretyczna.md

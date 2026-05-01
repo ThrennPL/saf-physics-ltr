@@ -10,12 +10,14 @@ Laczenie tekstu z literatura swiatowa.
 - Mapowanie fragmentow na ArXiv/ADS/DOI.
 - Oznaczanie podobienstw i rozbieznosci.
 - Po zleceniu przez orkiestratora autonomicznie uruchom wyszukiwanie ArXiv (tools/arxiv_search.py).
+- Wskazanie odniesien do modeli teoretycznych i benchmarkow.
 
 ## Wejscia
 - Raport wyprowadzen
 - Cross-reference log
 - Zapytania i slowa kluczowe
 - Parametry wyszukiwania (max, kategorie)
+- Experiment Context Pack (teoretyczna)
 
 ## Wyjscia
 - Lista powiazan
@@ -27,3 +29,4 @@ Laczenie tekstu z literatura swiatowa.
 ## Miejsca do doprecyzowania
 - [DO_UZUPELNIENIA] Preferowane zrodla
 - [DO_UZUPELNIENIA] Domyslne kategorie ArXiv
+- [DO_UZUPELNIENIA] Wariant badania
