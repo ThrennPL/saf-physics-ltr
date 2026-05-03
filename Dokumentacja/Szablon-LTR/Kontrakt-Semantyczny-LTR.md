@@ -28,11 +28,16 @@
 ## Tezy i twierdzenia
 - T1: 
   - Status: robocza | zweryfikowana
+  - Pewnosc (0-1): 
   - Warunki: 
 
 ## Ograniczenia i zakres
 - O1: 
 - O2: 
+
+## Pytania otwarte (Q-XXX)
+- Q-001: 
+  - Priorytet: niski | sredni | wysoki
 
 ## Walidacja formalna
 - Wskaz kroki wymagajace CAS lub recznej weryfikacji.

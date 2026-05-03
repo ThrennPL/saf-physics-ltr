@@ -33,3 +33,8 @@
 - [ ] Akceptacje kompletne
 - [ ] Wymagania raportowe
 - [ ] Pelny zestaw artefaktow teoretycznych
+
+## Decyzja
+- Status: pass | pass-with-comments | fail
+- Komentarz: 
+- Pewnosc (0-1): 
