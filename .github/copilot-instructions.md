@@ -14,6 +14,8 @@ Jezyk: PL. Preferuj ASCII. Markdown-first.
 - Powiazania zapisz w formacie [ID:Typ].
 - Taguj rownania w raportach: po wzorze w osobnej linii dodaj tag w formacie EQ:ID.
 - Nietrywialne kroki oznaczaj [VERIFY-CAS].
+- Standard raportowania: status OK/Warning/Blocker; pewnosc skala 0-1 (liczbowa); pytania Q-XXX z priorytetem niski/sredni/wysoki.
+- ADS: jesli korzystasz z ADS, wymagaj ADS_API_TOKEN w .env.
 
 ## LTR
 - Dla trybu formalnego wymagaj jawnych zalozen, definicji i krokow.
@@ -25,6 +27,14 @@ Jezyk: PL. Preferuj ASCII. Markdown-first.
 - Gate 3: mozliwy agent-conditional pass dla niskiego ryzyka i tylko przy statusie pass bez komentarzy krytycznych.
 - Nie zatwierdzaj gate bez czlowieka, z wyjatkiem Gate 3 w trybie agent-conditional pass.
 - Dla fizyki teoretycznej domyslne progi confidence: 0.85/0.70/0.50 (do doprecyzowania w projekcie).
+- Statusy agentow sa robocze i nie stanowia decyzji gate.
+
+## Zaleznosci agentow
+- Formal Consistency rozstrzyga konflikty notacji i ID.
+- Model Review rozstrzyga konflikty fizyczne i merytoryczne.
+- Data Quality -> Statistics Review (jakosc danych warunkiem analizy).
+- Discovery -> Cross-Reference (slowa kluczowe i zakres literatury).
+- Artifact Quality konsoliduje wyniki i statusy z pozostalych agentow.
 
 ## Zachowanie modelu
 - Nie halucynuj literatury; oznacz poziom zaufania i preprint vs peer-reviewed.

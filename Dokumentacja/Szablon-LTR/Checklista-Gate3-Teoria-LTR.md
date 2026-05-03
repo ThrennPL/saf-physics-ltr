@@ -23,3 +23,4 @@
 ## Decyzja
 - Status: pass | pass-with-comments | fail
 - Komentarz: 
+- Pewnosc (0-1): 

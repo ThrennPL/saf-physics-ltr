@@ -10,9 +10,9 @@
 - Powiazane artefakty (format [ID:Typ]): 
 
 ## Powiazania z literatura
-| Zrodlo | Rok | Typ | Podobienstwo | Rozbieznosci | Zaufanie |
+| Zrodlo | Rok | Typ | Podobienstwo | Rozbieznosci | Pewnosc (0-1) |
 |---|---|---|---|---|---|
-|  |  | arXiv/doi | niskie/srednie/wysokie |  | niskie/srednie/wysokie |
+|  |  | ArXiv/ADS/Crossref/manualne | niskie/srednie/wysokie |  | 0.7 |
 
 ## Wnioski z porownania
 - 

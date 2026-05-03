@@ -5,8 +5,9 @@
 - Akceptujacy (PI): 
 - Akceptujacy (Statistics Reviewer): 
 - Data: 
+- Powiazane pytania (Q-XXX): 
 
 ## Decyzje
-| ID | Decyzja | Uzasadnienie | Owner | Data | Status |
-|---|---|---|---|---|---|
-|  |  |  |  |  |  |
+| ID | Decyzja | Uzasadnienie | Owner | Data | Status | Pewnosc (0-1) |
+|---|---|---|---|---|---|---|
+|  |  |  |  |  |  |  |

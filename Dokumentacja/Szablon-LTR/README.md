@@ -9,6 +9,9 @@ Zasady ogolne:
 - Powiazane artefakty zapisuj w formacie [ID:Typ], np. [LTR-DERIV-001:Raport].
 - Taguj rownania w raportach: po wzorze dodaj w osobnej linii tag EQ:ID.
 - W Mapie Notacji wpisz globalne zalozenia jednostkowe (np. c=1, hbar=1).
+- Uzywaj pola "pewnosc" jako liczby 0-1.
+- Status roboczy: OK / Warning / Blocker (jesli dotyczy).
+- Pytania eskalacyjne: Q-XXX z priorytetem niski/sredni/wysoki (jesli dotyczy).
 
 Lista szablonow:
 - Kontrakt-Semantyczny-LTR.md

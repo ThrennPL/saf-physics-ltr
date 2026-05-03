@@ -20,6 +20,9 @@ source .venv/bin/activate  # Linux/Mac
 # .venv\Scripts\activate  # Windows
 pip install -r requirements.txt
 
+# Optional: ADS token
+# Copy .env.example to .env and fill ADS_API_TOKEN
+
 # First agent run
 python tools/arxiv_search.py "lagrangian stability" --max 5
 ```
@@ -45,6 +48,12 @@ python tools/arxiv_search.py "lagrangian stability" --max 5
 
 Dokumentacja/ # Core assumptions + templates
 ├── [Assumptions-SAF-Physics.md](Assumptions-SAF-Physics.md)
+├── Karta-Badania.md
+├── Rejestr-Konfiguracji-Projektu.md
+├── Rejestr-Konfliktow-i-Eskalacji.md
+├── Konsolidacja-Statusow.md
+├── Review-Jakosci-Gate3.md
+└── Podsumowanie-Gate.md
 └── Szablon-LTR/ # Literate Theoretical Research templates
 Case-Template/ # New research case pattern
 .github/agents/ # Agent role configurations
@@ -55,6 +64,7 @@ tools/ # CLI utilities (lint, ArXiv, model routing)
 - **Core Design**: `Assumptions-SAF-Physics.md`
 - **Decisions Log**: `DECISIONS.md`
 - **Agent Config**: `.github/agents/*`
+- **Usage Guide**: `Dokumentacja/Instrukcja-Uzycia.md`
 
 ## Tech Stack
 
@@ -77,12 +87,31 @@ python tools/lint_ltr.py --fail-on-warning
 python tools/arxiv_search.py "CPT violation" --max 10 --cat hep-th
 ```
 
+## ADS Cross-Reference (token required)
+```bash
+# Requires ADS_API_TOKEN in .env
+python tools/ads_search.py "CPT violation" --max 10
+```
+
 ## Model Routing
 ```bash
 # Route tasks to optimal models
 python tools/route_model.py cross-reference
 python tools/route_model.py model-review --gate 3
 ```
+
+## Reporting Standard
+- Status: OK / Warning / Blocker
+- Confidence: 0-1 numeric
+- Questions: Q-XXX with priority (low/medium/high)
+
+## Prompts
+- `.github/prompts/kickoff-badania.prompt.md`
+- `.github/prompts/konfigurator-projektu-badawczego.prompt.md`
+- `.github/prompts/review-jakosci-badania.prompt.md`
+- `.github/prompts/eskalacja-konfliktow.prompt.md`
+- `.github/prompts/konsolidacja-statusow.prompt.md`
+- `.github/prompts/podsumowanie-gate.prompt.md`
 
 ## OCR Requirements
 **Tesseract required** (`pytesseract` wrapper only):

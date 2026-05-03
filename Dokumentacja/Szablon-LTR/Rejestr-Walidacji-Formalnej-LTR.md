@@ -11,10 +11,10 @@
 - CAS: SymPy
 
 ## Lista krokow do walidacji
-| Krok | Opis | Metoda | Status | Komentarz |
-|---|---|---|---|---|
-| K1 |  | CAS | niezweryfikowany |  |
-| K2 |  | reczna | niezweryfikowany |  |
+| Krok | Opis | Metoda | Status | Komentarz | Pewnosc (0-1) |
+|---|---|---|---|---|---|
+| K1 |  | CAS | niezweryfikowany |  |  |
+| K2 |  | reczna | niezweryfikowany |  |  |
 
 ## Wynik walidacji
 - Podsumowanie: 

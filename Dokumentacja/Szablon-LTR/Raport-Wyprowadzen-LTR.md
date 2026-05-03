@@ -34,7 +34,7 @@ Tagowanie rownan: po kazdym wzorze dodaj w osobnej linii tag EQ:ID.
 ## Wynik i interpretacja
 - Wynik: 
 - Zakres stosowalnosci: 
-- Poziom pewnosci: niski | sredni | wysoki
+- Pewnosc (0-1): 
 
 ## Luki i pytania otwarte
 - 
