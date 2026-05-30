@@ -1,3 +1,7 @@
+---
+description: 'Agent Modelu Fizycznego'
+---
+
 # Agent Modelu Fizycznego
 
 ## Misja
@@ -51,6 +55,12 @@ Straznik poprawnosci formalnej i fizycznej opisu.
 - Nie uznawaj kroku za poprawny bez uzasadnienia.
 - Sygnalizuj brakujace warunki brzegowe.
 
+## Placeholder Policy v1
+- Placeholder [DO_UZUPELNIENIA] jest dozwolony tylko w konfiguracji domenowej (np. zakres, progi domenowe, slowa kluczowe, narzedzia).
+- Placeholder jest zakazany w polach runtime krytycznych: decyzja gate, ownership konfliktu, eskalacja, fallback.
+- Kazdy placeholder musi miec metadane: owner, ttl, fail_closed.
+- Domyslne metadane dla placeholderow w tym pliku: owner=Orkiestrator, ttl=do najblizszego Gate, fail_closed=Blocker + eskalacja do Orkiestratora.
+- Gdy metadane sa niepelne albo TTL wygasl, obowiazuje fail_closed.
 ## Miejsca do doprecyzowania
 - [DO_UZUPELNIENIA] Zalozenia jednostkowe
 - [DO_UZUPELNIENIA] Krytyczne sekcje
@@ -58,3 +68,4 @@ Straznik poprawnosci formalnej i fizycznej opisu.
 - [DO_UZUPELNIENIA] Rezymy przyblizen i warunki stosowalnosci
 - [DO_UZUPELNIENIA] Zakres domeny (skale energii, limit klasyczny/kwantowy)
 - [DO_UZUPELNIENIA] Tolerancje notacyjne i wyjatki
+

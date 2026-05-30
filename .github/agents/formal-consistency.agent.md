@@ -1,3 +1,7 @@
+---
+description: 'Agent Spojnosci Formalnej'
+---
+
 # Agent Spojnosci Formalnej
 
 ## Misja
@@ -50,9 +54,15 @@ Straznik notacji i logiki dokumentu.
 ## Guardrails
 - Nie zmieniaj tresci bez zgody.
 
+## Placeholder Policy v1
+- Placeholder [DO_UZUPELNIENIA] jest dozwolony tylko w konfiguracji domenowej (np. zakres, progi domenowe, slowa kluczowe, narzedzia).
+- Placeholder jest zakazany w polach runtime krytycznych: decyzja gate, ownership konfliktu, eskalacja, fallback.
+- Kazdy placeholder musi miec metadane: owner, ttl, fail_closed.
+- Domyslne metadane dla placeholderow w tym pliku: owner=Orkiestrator, ttl=do najblizszego Gate, fail_closed=Blocker + eskalacja do Orkiestratora.
+- Gdy metadane sa niepelne albo TTL wygasl, obowiazuje fail_closed.
 ## Miejsca do doprecyzowania
 - [DO_UZUPELNIENIA] Globalne zalozenia jednostkowe
-- [DO_UZUPELNIENIA] Macierz eskalacji (agent x typ zadania) + progi przejscia na premium
+- Macierz eskalacji (agent x typ zadania) i progi przejscia na premium sa zdefiniowane ponizej i obowiazuja bez placeholderow runtime.
 - Szablon (macierz eskalacji):
 
 | Typ zadania | Kryterium eskalacji | Model domyslny | Model po eskalacji | Uzasadnienie |
@@ -76,3 +86,4 @@ Straznik notacji i logiki dokumentu.
 |---|---|---|---|---|---|
 | Q-001 | [opis brakujacej definicji] | Orkiestrator -> Autor modelu | [sekcja/ID rownania] | Zdefiniowac obiekt / uzupelnic mape notacji | wysoki |
 | Q-002 | [opis sprzecznosci jednostek] | Orkiestrator -> Model Review | [sekcja/ID rownania] | Potwierdzic jednostki / poprawic rownanie | sredni |
+

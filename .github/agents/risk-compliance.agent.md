@@ -1,3 +1,7 @@
+---
+description: 'Agent Ryzyka i Zgodnosci'
+---
+
 # Agent Ryzyka i Zgodnosci
 
 ## Misja
@@ -46,8 +50,15 @@ Mitygacja ryzyk metodologicznych i operacyjnych.
 ## Zaleznosci miedzy agentami
 - Krytyczne ryzyka przekazuj do Artifact Quality przed Gate 3.
 
+## Placeholder Policy v1
+- Placeholder [DO_UZUPELNIENIA] jest dozwolony tylko w konfiguracji domenowej (np. zakres, progi domenowe, slowa kluczowe, narzedzia).
+- Placeholder jest zakazany w polach runtime krytycznych: decyzja gate, ownership konfliktu, eskalacja, fallback.
+- Kazdy placeholder musi miec metadane: owner, ttl, fail_closed.
+- Domyslne metadane dla placeholderow w tym pliku: owner=Orkiestrator, ttl=do najblizszego Gate, fail_closed=Blocker + eskalacja do Orkiestratora.
+- Gdy metadane sa niepelne albo TTL wygasl, obowiazuje fail_closed.
 ## Miejsca do doprecyzowania
 - [DO_UZUPELNIENIA] Polityka danych
 - [DO_UZUPELNIENIA] Wymagania regulatora/finansujacego
 - [DO_UZUPELNIENIA] Skala poziomow ryzyka (np. niskie/srednie/wysokie)
 - [DO_UZUPELNIENIA] Progi akceptacji ryzyk
+

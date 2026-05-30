@@ -1,3 +1,7 @@
+﻿---
+description: 'Kickoff badania (prompt)'
+---
+
 # Kickoff badania (prompt)
 
 Cel: zebranie minimalnych informacji startowych.
@@ -16,3 +20,4 @@ Zapytaj o:
 
 Wyjscie: wstepna karta badania + lista brakow do Gate 1.
 Zapisz w: Dokumentacja/Karta-Badania.md
+

@@ -1,3 +1,7 @@
+﻿---
+description: 'Konsolidacja statusow (prompt)'
+---
+
 # Konsolidacja statusow (prompt)
 
 Cel: zbiorcze podsumowanie statusow agentow.
@@ -9,3 +13,4 @@ Zbierz:
 
 Wyjscie: tabela statusow + lista pytan + rekomendacja kolejnego kroku.
 Zapisz w: Dokumentacja/Konsolidacja-Statusow.md
+

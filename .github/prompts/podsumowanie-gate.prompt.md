@@ -1,3 +1,7 @@
+﻿---
+description: 'Podsumowanie gate (prompt)'
+---
+
 # Podsumowanie gate (prompt)
 
 Cel: przygotowanie decyzji gate na podstawie artefaktow i statusow.
@@ -9,3 +13,4 @@ Wejscia:
 
 Wyjscie: decyzja gate (pass / pass-with-comments / fail) + uzasadnienie + lista brakow + pewnosc (0-1).
 Zapisz w: Dokumentacja/Podsumowanie-Gate.md
+

@@ -1,3 +1,7 @@
+﻿---
+description: 'Review jakosci badania (prompt)'
+---
+
 # Review jakosci badania (prompt)
 
 Cel: sprawdzenie spojnosci artefaktow i Gate 3.
@@ -11,3 +15,4 @@ Sprawdz:
 
 Wyjscie: status pass / pass-with-comments / fail + lista brakow + pewnosc (0-1) + konflikty.
 Zapisz w: Dokumentacja/Review-Jakosci-Gate3.md
+

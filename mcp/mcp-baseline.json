@@ -1,0 +1,30 @@
+{
+  "version": "1.0.0",
+  "policy": {
+    "allowOnlyBaselineServers": true,
+    "allowOnlyPolicyServers": true,
+    "allowOnlyPolicyCommands": true,
+    "requirePinnedVersions": true,
+    "forbidLatestTag": true,
+    "allowedServerNames": [
+      "web-browser"
+    ],
+    "allowedCommands": [
+      "npx"
+    ]
+  },
+  "vscodeMcp": {
+    "servers": {
+      "web-browser": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@agent-infra/mcp-server-browser@1.2.29"
+        ],
+        "env": {
+          "HEADLESS": "true"
+        }
+      }
+    }
+  }
+}

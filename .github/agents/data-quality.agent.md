@@ -1,3 +1,7 @@
+---
+description: 'Agent Jakosci Danych'
+---
+
 # Agent Jakosci Danych
 
 ## Misja
@@ -49,7 +53,14 @@ Detekcja anomalii w danych wejsciowych i wynikowych.
 - Wyniki Data Quality sa wejsciem dla Statistics Review.
 - Konflikty metryk lub zakresow eskaluj do Statistics Review.
 
+## Placeholder Policy v1
+- Placeholder [DO_UZUPELNIENIA] jest dozwolony tylko w konfiguracji domenowej (np. zakres, progi domenowe, slowa kluczowe, narzedzia).
+- Placeholder jest zakazany w polach runtime krytycznych: decyzja gate, ownership konfliktu, eskalacja, fallback.
+- Kazdy placeholder musi miec metadane: owner, ttl, fail_closed.
+- Domyslne metadane dla placeholderow w tym pliku: owner=Orkiestrator, ttl=do najblizszego Gate, fail_closed=Blocker + eskalacja do Orkiestratora.
+- Gdy metadane sa niepelne albo TTL wygasl, obowiazuje fail_closed.
 ## Miejsca do doprecyzowania
 - [DO_UZUPELNIENIA] Progi akceptacji
 - [DO_UZUPELNIENIA] Definicje krytycznych pol i metadanych
 - [DO_UZUPELNIENIA] Reguly wykrywania driftu
+

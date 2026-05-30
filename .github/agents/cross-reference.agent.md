@@ -1,3 +1,7 @@
+---
+description: 'Agent Cross-Reference'
+---
+
 # Agent Cross-Reference
 
 ## Misja
@@ -54,9 +58,16 @@ Laczenie tekstu z literatura swiatowa.
 ## Guardrails
 - Oznaczaj poziom zaufania.
 
+## Placeholder Policy v1
+- Placeholder [DO_UZUPELNIENIA] jest dozwolony tylko w konfiguracji domenowej (np. zakres, progi domenowe, slowa kluczowe, narzedzia).
+- Placeholder jest zakazany w polach runtime krytycznych: decyzja gate, ownership konfliktu, eskalacja, fallback.
+- Kazdy placeholder musi miec metadane: owner, ttl, fail_closed.
+- Domyslne metadane dla placeholderow w tym pliku: owner=Orkiestrator, ttl=do najblizszego Gate, fail_closed=Blocker + eskalacja do Orkiestratora.
+- Gdy metadane sa niepelne albo TTL wygasl, obowiazuje fail_closed.
 ## Miejsca do doprecyzowania
 - [DO_UZUPELNIENIA] Preferowane zrodla
 - [DO_UZUPELNIENIA] Domyslne kategorie ArXiv
 - [DO_UZUPELNIENIA] Konfiguracja ADS_API_TOKEN (.env)
 - [DO_UZUPELNIENIA] Reguly filtrowania (min. rok, preferowane czasopisma, kategorie)
 - [DO_UZUPELNIENIA] Wariant badania
+

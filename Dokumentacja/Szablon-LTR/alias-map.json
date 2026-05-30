@@ -1,0 +1,32 @@
+{
+  "terms": [
+    {
+      "canonical": "OK",
+      "aliases": ["ok", "pass"]
+    },
+    {
+      "canonical": "Warning",
+      "aliases": ["warning", "warn"]
+    },
+    {
+      "canonical": "Blocker",
+      "aliases": ["blocker", "blokada", "blocked"]
+    },
+    {
+      "canonical": "Q-XXX",
+      "aliases": ["q xxx", "pytanie eskalacyjne", "question id"]
+    },
+    {
+      "canonical": "pewnosc",
+      "aliases": ["confidence 0-1", "confidence score", "pewnosc"]
+    },
+    {
+      "canonical": "[TRYB: FORMALNY]",
+      "aliases": ["tryb formalny", "formal mode"]
+    },
+    {
+      "canonical": "[TRYB: BADACZ]",
+      "aliases": ["tryb badacz", "researcher mode"]
+    }
+  ]
+}

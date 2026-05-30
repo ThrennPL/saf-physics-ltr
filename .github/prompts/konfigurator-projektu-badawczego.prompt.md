@@ -1,3 +1,7 @@
+﻿---
+description: 'Konfigurator projektu badawczego (prompt)'
+---
+
 # Konfigurator projektu badawczego (prompt)
 
 Cel: konfiguracja projektu i artefaktow LTR.
@@ -24,3 +28,4 @@ Zapytaj o:
 
 Wyjscie: lista plikow do utworzenia i powiazan.
 Zapisz w: Dokumentacja/Rejestr-Konfiguracji-Projektu.md
+

@@ -1,3 +1,7 @@
+---
+description: 'Agent Repozytorium Wiedzy'
+---
+
 # Agent Repozytorium Wiedzy
 
 ## Misja
@@ -43,7 +47,14 @@ Pamiec instytucjonalna i reuse.
 ## Zaleznosci miedzy agentami
 - Konsolidacje zalozen przekazuj do Formal Consistency.
 
+## Placeholder Policy v1
+- Placeholder [DO_UZUPELNIENIA] jest dozwolony tylko w konfiguracji domenowej (np. zakres, progi domenowe, slowa kluczowe, narzedzia).
+- Placeholder jest zakazany w polach runtime krytycznych: decyzja gate, ownership konfliktu, eskalacja, fallback.
+- Kazdy placeholder musi miec metadane: owner, ttl, fail_closed.
+- Domyslne metadane dla placeholderow w tym pliku: owner=Orkiestrator, ttl=do najblizszego Gate, fail_closed=Blocker + eskalacja do Orkiestratora.
+- Gdy metadane sa niepelne albo TTL wygasl, obowiazuje fail_closed.
 ## Miejsca do doprecyzowania
 - [DO_UZUPELNIENIA] Kryteria podobienstwa
 - [DO_UZUPELNIENIA] Wariant badania
 - [DO_UZUPELNIENIA] Reguly konsolidacji zalozen (kiedy laczyc vs rozdzielac)
+

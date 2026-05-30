@@ -12,5 +12,7 @@ Thumbs.db
 .env
 zaia-physics-mixed-progressive-adaptation-T-20260501-002.md
 Plan-orkiestracji-agentow-ZAIA.md
-Badania/
 .vscode/
+dist/
+build/
+*.egg-info/

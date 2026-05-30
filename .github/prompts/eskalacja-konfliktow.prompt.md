@@ -1,3 +1,7 @@
+﻿---
+description: 'Eskalacja konfliktow (prompt)'
+---
+
 # Eskalacja konfliktow (prompt)
 
 Cel: rozstrzyganie konfliktow miedzy agentami.
@@ -10,3 +14,4 @@ Sprawdz:
 
 Wyjscie: decyzja eskalacyjna + uzasadnienie + pytania Q-XXX z priorytetem.
 Zapisz w: Dokumentacja/Rejestr-Konfliktow-i-Eskalacji.md
+

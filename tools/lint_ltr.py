@@ -7,7 +7,6 @@ import argparse
 import re
 from pathlib import Path
 
-
 EQ_TAG_RE = re.compile(r"^\s*\[EQ:([A-Za-z0-9_-]+)\]\s*$")
 ID_TYP_RE = re.compile(r"\[[A-Za-z0-9_-]+:[A-Za-z0-9_-]+\]")
 

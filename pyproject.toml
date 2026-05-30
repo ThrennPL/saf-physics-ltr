@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "theoretical-md-tools"
+version = "0.1.0"
+description = "Minimal project metadata for quality gates"
+requires-python = ">=3.11"
+
+[tool.setuptools]
+packages = []
+py-modules = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.mypy]
+python_version = "3.13"
+files = ["tools"]
+ignore_missing_imports = true
+warn_unused_ignores = true

@@ -4,8 +4,8 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Iterable
 from datetime import datetime
-from typing import Iterable
 
 import arxiv
 

@@ -1,13 +1,16 @@
 # SAF Physics LTR
 
 
-Repozytorium dla modelu Srodowiska Agentow AI dla Fizyki (SAF) w podejsciu Literate Theoretical Research (LTR).
+Repozytorium modelu Srodowiska Agentow AI dla Fizyki (SAF) w podejsciu Literate Theoretical Research (LTR).
 ![SAF Architecture](Dokumentacja/SAF_PL.png)
 
 ## Szybki start
 1. Utworz i aktywuj srodowisko Python (`.venv`).
-2. Zainstaluj zaleznosci: `pip install -r requirements.txt`.
-3. Opcjonalnie: skopiuj `.env.example` do `.env` i ustaw ADS_API_TOKEN.
+2. Zainstaluj zaleznosci uruchomieniowe: `pip install -r requirements.txt`.
+3. (Opcjonalnie, dla jakosci i CI) Zainstaluj zaleznosci developerskie: `pip install -r requirements-dev.txt`.
+4. (Opcjonalnie) Wlacz hook pre-commit: `pre-commit install`.
+5. Opcjonalnie: skopiuj `.env.example` do `.env` i ustaw ADS_API_TOKEN.
+6. Uruchom kontrole sanity dla security/MCP: `python tools/security_sanity_check.py`.
 
 ```bash
 git clone https://github.com/ThrennPL/saf-physics-ltr
@@ -17,8 +20,17 @@ source .venv/bin/activate  # Linux/Mac
 # .venv\Scripts\activate  # Windows
 pip install -r requirements.txt
 
+# Opcjonalnie: zaleznosci developerskie (lint/test/typecheck/build)
+pip install -r requirements-dev.txt
+
+# Opcjonalnie: wlacz pre-commit (bramka dryfu MCP)
+pre-commit install
+
 # Opcjonalnie: ADS token
 # Skopiuj .env.example do .env i ustaw ADS_API_TOKEN
+
+# Sanity check security/MCP
+python tools/security_sanity_check.py
 
 # Pierwsze uruchomienie narzedzia
 python tools/arxiv_search.py "lagrangian stability" --max 5
@@ -28,9 +40,9 @@ python tools/arxiv_search.py "lagrangian stability" --max 5
 ## Minimalne dane startowe (wymagane)
 - Hipoteza i cel badania.
 - Zakres i wykluczenia.
-- Wariant badania (teoretyczna/eksperymentalna/computational).
+- Wariant badania (teoretyczna/eksperymentalna/obliczeniowa).
 - Zalozenia krytyczne.
-- Wypelniona Dokumentacja/Karta-Badania.md.
+- Wypelniona `Dokumentacja/Karta-Badania.md`.
 
 
 ## Dlaczego SAF?
@@ -42,19 +54,35 @@ python tools/arxiv_search.py "lagrangian stability" --max 5
 
 
 ## Architektura (agenci)
-12 specjalizowanych agentow:
-├── Research Orchestrator
-├── Formal Consistency
-├── Model Review
-├── Scientific Discovery (ArXiv/ADS)
-├── Cross-Reference
-├── Data Quality
-├── Statistics & Uncertainty
-├── Risk & Compliance
-├── Artifact Quality
-├── Simulation/Experiment
-├── Socratic Mentor
-└── Knowledge Repo
+13 wyspecjalizowanych agentow:
+- Research Orchestrator: routing strumieni, przejscia gate, agregacja statusow.
+- Formal Consistency: spojnosc notacji/ID i rozstrzyganie konfliktow notacyjnych.
+- Model Review: rozstrzyganie konfliktow fizycznych i merytorycznych.
+- Physics Discovery: definiowanie kierunku rozpoznania i pytan badawczych.
+- Cross-Reference: mapowanie literatury ArXiv/ADS i powiazan dowodowych.
+- Data Quality: kontrola jakosci danych przed analiza niepewnosci.
+- Statistics Review: ocena niepewnosci/CI i odpornosci wnioskowania.
+- Risk & Compliance: kontrola ryzyk i warunkow fail-closed.
+- Simulation/Experiment: przygotowanie wariantow wykonania i reprodukowalnosci.
+- Artifact Quality: konsolidacja wynikow do pakietu gate-ready.
+- Knowledge Repo: normalizacja slownika i ponowne wykorzystanie artefaktow.
+- Language Polish Quality: obowiazkowa walidacja jezykowa PL przed finalizacja/PDF.
+- Technical Developer: poprawki kodu, automatyzacje i obsluga incydentow narzedziowych.
+
+## Przeplyw orkiestracji
+Domyslna kolejnosc i zaleznosci:
+1. Zebranie wymaganych artefaktow i pakietow kontekstu case'u.
+2. `Formal Consistency -> Model Review` (kolejnosc twarda).
+3. `Data Quality -> Statistics Review` (kolejnosc twarda).
+4. `Discovery -> Cross-Reference` dla zakresu literatury i mapowania powiazan.
+5. `Language Polish Quality` przed finalizacja dokumentow i eksportem paczki.
+6. `Risk & Compliance` rownolegle, z eskalacja znalezisk krytycznych.
+7. `Artifact Quality` jako konsolidacja statusow i rekomendacja.
+8. Decyzja czlowieka dla Gate 1/2/4; Gate 3 warunkowo, tylko przy niskim ryzyku.
+
+Reguly eskalacji:
+- Kazdy `Blocker` lub nierozstrzygniety konflikt eskaluj do Orkiestratora, a potem do czlowieka.
+- Brak wymaganych danych uruchamia fail-closed.
 
 
 ## Struktura
@@ -71,7 +99,7 @@ python tools/arxiv_search.py "lagrangian stability" --max 5
 - .github/prompts/ - prompty pomocnicze
 - tools/ - narzedzia CLI (lint LTR, ArXiv/ADS, routing modeli)
 
-Nowe pakiety artefaktow dla fizyki teoretycznej sa w Case-Template/Artefakty/.
+Nowe pakiety artefaktow dla fizyki teoretycznej sa w `Case-Template/Artefakty/`.
 
 
 ## Najwazniejsze pliki
@@ -84,7 +112,7 @@ Nowe pakiety artefaktow dla fizyki teoretycznej sa w Case-Template/Artefakty/.
 
 
 ## Zaleznosci
-- Python 3.13+
+- Python 3.11+ (rekomendowane 3.13)
 - pypdf
 - sympy
 - bibtexparser
@@ -121,7 +149,7 @@ python tools/lint_ltr.py
 ```
 
 
-Zakoncz z bledem, gdy sa ostrzezenia:
+Polecenie zakonczy sie bledem, gdy sa ostrzezenia:
 
 
 ```bash
@@ -154,7 +182,7 @@ python tools/route_model.py model-review --gate 3
 ```
 
 
-Konfiguracja w tools/model_routing.json.
+Konfiguracja: `tools/model_routing.json`.
 
 
 ## Standard raportowania
@@ -171,8 +199,53 @@ Konfiguracja w tools/model_routing.json.
 - .github/prompts/konsolidacja-statusow.prompt.md
 - .github/prompts/podsumowanie-gate.prompt.md
 
+## Pilot badawczy: T03 Newton-Yukawa Orbit Stability
+Zespol przygotowal pelny pilot w katalogu `Badania/T03-Newton-Yukawa-Orbit-Stability`.
+
+Podsumowanie merytoryczne:
+- Cel: sprawdzic, czy slaba poprawka Yukawy zmienia lokalna stabilnosc orbit kolowych.
+- Wynik glowny: warunek stabilnosci lokalnej
+	$1+\beta e^{-x}(1+x-x^2)>0$, gdzie $x=r_c/\lambda$.
+- Wniosek: dla `beta = 0` odzyskujemy limit Newtonowski; wplyw znaku zalezy od `(1+x-x^2)`.
+
+Podsumowanie techniczne:
+- Domknieto pelny lancuch artefaktow (karta badania, wyprowadzenie, rejestr walidacji, pakiet ryzyk, checklisty Gate).
+- Walidacja formalna obejmuje kontrole reczne i domkniecie CAS (`SymPy`, K5 `[VERIFY-CAS]` zamkniety).
+- Decyzje human-in-the-loop dla Gate 1-4 sa zapisane jako `approved`.
+
+Rekomendowane punkty wejscia:
+- `Badania/T03-Newton-Yukawa-Orbit-Stability/00-MAPA-CZYTANIA-RECENZJA.md`
+- `Badania/T03-Newton-Yukawa-Orbit-Stability/Raport-Wynikowy.md`
+- `Badania/T03-Newton-Yukawa-Orbit-Stability/Raport-Wyprowadzen-LTR.md`
+- `Badania/T03-Newton-Yukawa-Orbit-Stability/Rejestr-Walidacji-Formalnej-LTR.md`
+- `Badania/T03-Newton-Yukawa-Orbit-Stability/Akceptacje-Decyzje.md`
+
 
 ## Wspolpraca
-1. Star repozytorium
+1. Dodaj gwiazdke repozytorium
 2. Fork -> zmiany -> PR
-3. Issues dla nowych funkcji agentow
+3. Zglos issue dla nowych funkcji agentow
+
+## Baseline MCP (repo-wide)
+
+```bash
+# Synchronizacja lokalnego .vscode/mcp.json z baseline repo
+python tools/mcp_baseline.py sync
+
+# Walidacja locka hash, allowlist i dryfu konfiguracji
+python tools/mcp_baseline.py check
+
+# Aktualizacja hash lock po zatwierdzonej zmianie baseline
+python tools/mcp_baseline.py lock
+```
+
+W CI dziala tez bramka dryfu MCP: `.github/workflows/security-mcp-gate.yml`.
+
+## Pakiet procesowy P0
+- Runbook wykonania gate: `Dokumentacja/Runbook-Gate-Executor.md`.
+- Budowa minimalnego pakietu dowodow:
+	- `python tools/build_evidence_packet.py --owner "HUMAN_OWNER" --decision pending`
+- Kontrola dryfu slownika (aliasy + terminy kanoniczne):
+	- `python tools/taxonomy_guard.py`
+- Zadanie laczone w VS Code:
+	- `quality-gates-plus-p0`

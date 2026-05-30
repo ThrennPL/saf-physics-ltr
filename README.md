@@ -1,7 +1,7 @@
 # SAF Physics LTR ⚛️ **Science 2.0 Operating System**
 
-**Multi-agent research platform** for SAF/LTR workflows in theoretical physics.  
-✅ Human-in-the-loop quality gates | Formal consistency checks | Literature cross-reference  
+**Multi-agent research platform** for SAF/LTR workflows in theoretical physics.
+✅ Human-in-the-loop quality gates | Formal consistency checks | Literature cross-reference
 ⭐ **Fork, star, contribute!**
 
 ![SAF Architecture](Dokumentacja/SAF.png)
@@ -15,8 +15,17 @@ source .venv/bin/activate  # Linux/Mac
 # .venv\Scripts\activate  # Windows
 pip install -r requirements.txt
 
+# Optional: developer dependencies (lint/test/typecheck/build)
+pip install -r requirements-dev.txt
+
+# Optional: enable pre-commit MCP drift gate
+pre-commit install
+
 # Optional: ADS token
 # Copy .env.example to .env and fill ADS_API_TOKEN
+
+# Security/MCP sanity check
+python tools/security_sanity_check.py
 
 # First agent run
 python tools/arxiv_search.py "lagrangian stability" --max 5
@@ -32,24 +41,40 @@ python tools/arxiv_search.py "lagrangian stability" --max 5
 ## Why SAF?
 **Theoretical physics research problems solved:**
 - Inconsistent notation → **Agent Formal Consistency**
-- Literature gaps → **ArXiv/ADS Discovery Agent** 
+- Literature gaps → **ArXiv/ADS Discovery Agent**
 - Reproducibility issues → **LTR validation and formal checks**
 - Gate review delays → **Automated Quality Gates G1-G4**
 
 ## Core Architecture
-12 Specialized Agents:
-├── Research Orchestrator
-├── Formal Consistency
-├── Model Review
-├── Scientific Discovery (ArXiv/ADS)
-├── Cross-Reference
-├── Data Quality
-├── Statistics & Uncertainty
-├── Risk & Compliance
-├── Artifact Quality
-├── Simulation/Experiment
-├── Socratic Mentor
-└── Knowledge Repo
+13 Specialized Agents:
+- Research Orchestrator: routes workstreams, coordinates gate transitions, aggregates statuses.
+- Formal Consistency: validates notation/ID consistency and resolves notation conflicts.
+- Model Review: resolves physical and domain-level conflicts.
+- Physics Discovery: frames discovery directions and research questions.
+- Cross-Reference: executes ArXiv/ADS literature linkage and evidence mapping.
+- Data Quality: validates dataset quality before uncertainty analysis.
+- Statistics Review: evaluates uncertainty/CI and inference robustness.
+- Risk & Compliance: tracks risk posture and fail-closed conditions.
+- Simulation/Experiment: prepares executable variants and reproducibility checks.
+- Artifact Quality: consolidates outputs into gate-ready evidence packets.
+- Knowledge Repo: normalizes terminology and reuse taxonomy.
+- Language Polish Quality: mandatory PL editorial validation before finalization/PDF.
+- Technical Developer: code patches, automation, and tooling incident handling.
+
+## Orchestration Flow
+Default execution order and hard dependencies:
+1. Collect required artifacts and case context packs.
+2. Run `Formal Consistency -> Model Review` (hard order).
+3. Run `Data Quality -> Statistics Review` (hard order).
+4. Run `Discovery -> Cross-Reference` for literature scope and links.
+5. Run `Language Polish Quality` before final document/package export.
+6. Run `Risk & Compliance` in parallel and escalate critical findings.
+7. Run `Artifact Quality` to consolidate statuses and recommendation.
+8. Human decision for Gate 1/2/4; Gate 3 can be conditional only under low risk.
+
+Escalation rules:
+- Any `Blocker` or unresolved conflict is escalated to Orchestrator and then to human.
+- Missing required inputs triggers fail-closed behavior.
 
 ## Repository Structure
 
@@ -76,7 +101,7 @@ tools/ # CLI utilities (lint, ArXiv/ADS, model routing)
 
 ## Tech Stack
 
-Python 3.13+ | pypdf | sympy | bibtexparser | networkx
+Python 3.11+ (recommended 3.13) | pypdf | sympy | bibtexparser | networkx
 pillow | pytesseract | chromadb | crossrefapi | graphviz
 
 
@@ -121,13 +146,34 @@ python tools/route_model.py model-review --gate 3
 - `.github/prompts/konsolidacja-statusow.prompt.md`
 - `.github/prompts/podsumowanie-gate.prompt.md`
 
+## Pilot Case: T03 Newton-Yukawa Orbit Stability
+The team prepared a full pilot case under `Badania/T03-Newton-Yukawa-Orbit-Stability`.
+
+Scientific summary:
+- Objective: verify whether a weak Yukawa correction changes local stability of circular orbits.
+- Main result: local stability condition
+	$1+\beta e^{-x}(1+x-x^2)>0$, where $x=r_c/\lambda$.
+- Outcome: baseline Newtonian limit recovered for `beta = 0`; sign impact depends on `(1+x-x^2)`.
+
+Technical summary:
+- End-to-end artifact chain completed (research card, derivation, validation register, risk pack, gate checklists).
+- Formal validation includes manual checks and CAS closure (`SymPy`, K5 `[VERIFY-CAS]` closed).
+- Human-in-the-loop gate decisions recorded as approved for Gate 1-4.
+
+Recommended entry points:
+- `Badania/T03-Newton-Yukawa-Orbit-Stability/00-MAPA-CZYTANIA-RECENZJA.md`
+- `Badania/T03-Newton-Yukawa-Orbit-Stability/Raport-Wynikowy.md`
+- `Badania/T03-Newton-Yukawa-Orbit-Stability/Raport-Wyprowadzen-LTR.md`
+- `Badania/T03-Newton-Yukawa-Orbit-Stability/Rejestr-Walidacji-Formalnej-LTR.md`
+- `Badania/T03-Newton-Yukawa-Orbit-Stability/Akceptacje-Decyzje.md`
+
 ## OCR Requirements
 **Tesseract required** (`pytesseract` wrapper only):
 ```bash
 # Ubuntu/Debian
 sudo apt install tesseract-ocr
 
-# macOS  
+# macOS
 brew install tesseract
 ```
 
@@ -151,3 +197,27 @@ brew install graphviz      # macOS
 4. **Physics cases** welcome (Case B/C pilots)
 
 **Science 2.0 = Theoretical Physicists + SAF Agents = Scientific Acceleration**
+
+## MCP Baseline (repo-wide)
+
+```bash
+# Sync local VS Code MCP config from repository baseline
+python tools/mcp_baseline.py sync
+
+# Validate hash lock, allowlists, and local drift
+python tools/mcp_baseline.py check
+
+# Update baseline hash lock after approved baseline change
+python tools/mcp_baseline.py lock
+```
+
+CI also enforces MCP drift checks in `.github/workflows/security-mcp-gate.yml`.
+
+## P0 Process Pack
+- Operational runbook: `Dokumentacja/Runbook-Gate-Executor.md`.
+- Build minimal evidence packet:
+	- `python tools/build_evidence_packet.py --owner "HUMAN_OWNER" --decision pending`
+- Taxonomy drift guard (alias map + canonical terms):
+	- `python tools/taxonomy_guard.py`
+- Combined task in VS Code:
+	- `quality-gates-plus-p0`
