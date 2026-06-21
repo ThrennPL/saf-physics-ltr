@@ -9,7 +9,11 @@ Cel: wykonanie gate w sposob powtarzalny, z jasnym torem pre/run/post oraz fail-
    - `python tools/security_sanity_check.py`
    - `python tools/taxonomy_guard.py`
 4) Zbierz artefakty decyzji do pakietu dowodow:
-   - `python tools/build_evidence_packet.py --output Dokumentacja/Evidence-Packet-Gate.md --decision pending --owner "OWNER"`
+   - `python tools/build_evidence_packet.py --output Dokumentacja/Evidence-Packet-Gate.md --decision pending --owner "OWNER" --gate-id G3 --manifest-mode inline --strict-metadata --artifact "Dokumentacja/Konsolidacja-Statusow.md|Warning|Wstepna konsolidacja przed decyzja" --artifact "Dokumentacja/Rejestr-Konfliktow-i-Eskalacji.md|Warning|Braki niekrytyczne dopuszczone na etapie pending" --artifact "Dokumentacja/Podsumowanie-Gate.md|Warning|Decyzja finalna jeszcze niezatwierdzona" --require-artifact Dokumentacja/Konsolidacja-Statusow.md --require-artifact Dokumentacja/Rejestr-Konfliktow-i-Eskalacji.md --require-artifact Dokumentacja/Podsumowanie-Gate.md`
+5) Zweryfikuj zero-loss merytoryczny (obowiazkowe):
+   - Potwierdz, ze tresc naukowa pozostaje w artefaktach zrodlowych case (generator packetu jej nie przenosi).
+   - Potwierdz mapowanie: teza/wyprowadzenie/decyzja -> plik zrodlowy.
+   - Brak mapowania dla elementu krytycznego traktuj jako Blocker (fail_closed).
 
 ## 2. Run (wykonanie gate)
 1) Uzupelnij statusy agentow: OK/Warning/Blocker.
@@ -27,7 +31,8 @@ Warunki uruchomienia:
 - sanity check FAIL,
 - taxonomy guard FAIL,
 - status Blocker bez akceptacji ownera,
-- brak krytycznego artefaktu decyzji.
+- brak krytycznego artefaktu decyzji,
+- brak potwierdzenia zero-loss dla tresci merytorycznej.
 
 Kroki:
 1) Oznacz gate jako `fail` lub `blocked`.

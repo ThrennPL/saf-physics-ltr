@@ -244,7 +244,9 @@ W CI dziala tez bramka dryfu MCP: `.github/workflows/security-mcp-gate.yml`.
 ## Pakiet procesowy P0
 - Runbook wykonania gate: `Dokumentacja/Runbook-Gate-Executor.md`.
 - Budowa minimalnego pakietu dowodow:
-	- `python tools/build_evidence_packet.py --owner "HUMAN_OWNER" --decision pending`
+	- `python tools/build_evidence_packet.py --owner "HUMAN_OWNER" --decision pending --gate-id G3 --manifest-mode inline --strict-metadata --artifact "Dokumentacja/Konsolidacja-Statusow.md|Warning|Wstepna konsolidacja" --artifact "Dokumentacja/Rejestr-Konfliktow-i-Eskalacji.md|Warning|Wstepny rejestr" --artifact "Dokumentacja/Podsumowanie-Gate.md|Warning|Decyzja finalna przed owner review" --require-artifact Dokumentacja/Konsolidacja-Statusow.md --require-artifact Dokumentacja/Rejestr-Konfliktow-i-Eskalacji.md --require-artifact Dokumentacja/Podsumowanie-Gate.md`
+	- Tryb `--strict-metadata` dziala fail_closed: brak krytycznego artefaktu albo status `Missing/Blocker` zatrzymuje proces.
+	- Zero-loss: generator buduje indeks i statusy, ale nie przenosi tresci merytorycznej dokumentow case.
 - Kontrola dryfu slownika (aliasy + terminy kanoniczne):
 	- `python tools/taxonomy_guard.py`
 - Zadanie laczone w VS Code:

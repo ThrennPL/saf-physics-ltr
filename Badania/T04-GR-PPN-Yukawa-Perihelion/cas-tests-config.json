@@ -1,0 +1,58 @@
+{
+  "title": "Wyniki CAS T04",
+  "meta": {
+    "case_id": "T04-GR-PPN-Yukawa-Perihelion"
+  },
+  "symbols": ["G", "M", "a", "e", "c", "beta", "lam", "Fe", "period_days"],
+  "derived": {
+    "delta_1pn": "6*pi*G*M/(a*(1-e**2)*c**2)",
+    "delta_y": "pi*beta*(a/lam)**2*exp(-a/lam)*Fe",
+    "delta_total": "delta_1pn + delta_y",
+    "ratio": "Abs(delta_y)/Abs(delta_1pn)",
+    "arcsec_per_century": "delta_1pn*(36525/period_days)*(180/pi)*3600"
+  },
+  "tests": [
+    {
+      "name": "K5a beta->0",
+      "type": "limit_zero",
+      "expr": "delta_total - delta_1pn",
+      "var": "beta",
+      "target": "0"
+    },
+    {
+      "name": "K5b lambda->inf",
+      "type": "limit_zero",
+      "expr": "delta_y",
+      "var": "lam",
+      "target": "oo"
+    },
+    {
+      "name": "K5c R(beta->0)",
+      "type": "limit_zero",
+      "expr": "ratio",
+      "var": "beta",
+      "target": "0"
+    },
+    {
+      "name": "K5d struktura R",
+      "type": "contains_tokens",
+      "expr": "ratio",
+      "tokens": ["beta", "exp(-a/lam)", "lam**2"]
+    },
+    {
+      "name": "N1 1PN Merkury (arcsec/century)",
+      "type": "numeric_close",
+      "expr": "arcsec_per_century",
+      "expected": 42.982,
+      "abs_tol": 0.1,
+      "numeric_context": {
+        "G": 6.6743e-11,
+        "M": 1.98847e30,
+        "c": 299792458.0,
+        "a": 5.790905e10,
+        "e": 0.20563,
+        "period_days": 87.9691
+      }
+    }
+  ]
+}

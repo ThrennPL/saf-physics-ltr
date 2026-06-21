@@ -3,13 +3,19 @@
 ## Cel
 Ten plik jest legendą do paczki PDF dla badania T03 Newton-Yukawa-Orbit-Stability.
 
+## Tryb indeksowy OKF-lite (bez utraty merytoryki)
+1. Start od `01-INDEKS-ARTEFAKTOW-OKF-LITE.md`.
+2. Traktuj dokumenty zrodlowe `.md` jako jedyne zrodlo merytoryki.
+3. Traktuj `Pakiet-Recenzencki-Scalony.md` jako dokument pomocniczy do czytania.
+
 ## Rekomendowana kolejność czytania (wersja standardowa, 45-60 min)
-1. Karta-Badania.pdf
-2. Raport-Wynikowy.pdf
-3. Raport-Wyprowadzen-LTR.pdf
-4. Rejestr-Walidacji-Formalnej-LTR.pdf
-5. Akceptacje-Decyzje.pdf
-6. Aneks-Mapowanie-Orbity.pdf
+1. 01-INDEKS-ARTEFAKTOW-OKF-LITE.md
+2. Karta-Badania.pdf
+3. Raport-Wynikowy.pdf
+4. Raport-Wyprowadzen-LTR.pdf
+5. Rejestr-Walidacji-Formalnej-LTR.pdf
+6. Akceptacje-Decyzje.pdf
+7. Aneks-Mapowanie-Orbity.pdf
 
 ## Kolejność pełna (audit trail)
 1. Karta-Badania.pdf
@@ -56,7 +62,7 @@ Ten plik jest legendą do paczki PDF dla badania T03 Newton-Yukawa-Orbit-Stabili
 ## Wariant wysyłki
 - Jeśli profesor woli szybki przegląd: wyślij Raport-Wynikowy.pdf + Raport-Wyprowadzen-LTR.pdf + Aneks-Mapowanie-Orbity.pdf + Akceptacje-Decyzje.pdf.
 - Jeśli profesor woli pełny audit: wyślij całą paczkę PDF i ten plik jako pierwszą stronę.
-- Jeśli profesor woli jeden dokument: użyj pliku Pakiet-Recenzencki-Scalony.md (lub PDF po eksporcie).
+- Jeśli profesor woli jeden dokument: użyj pliku Pakiet-Recenzencki-Scalony.md (lub PDF po eksporcie), ale jako odniesienie kanoniczne zachowaj dokumenty zrodlowe i indeks OKF-lite.
 
 
 

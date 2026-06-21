@@ -7,3 +7,7 @@ Zasady:
 - Uzywaj formatu [ID:Typ] w powiazaniach.
 - Bibliografia trzymaj w Bibliografia/ (np. refs.bib).
 - Wyniki i artefakty robocze zapisuj w Wyniki/.
+
+Artefakt domkniecia procesu:
+- Uzyj szablonu Artefakty/Zamkniecie-Pakietu-Procesowego.md po uzyskaniu finalnego statusu process suite.
+- Zakres dokumentu jest proceduralny; nie zamyka merytoryki recenzenckiej (HITL).

@@ -3,6 +3,11 @@
 Dokument scalony zawierający komplet artefaktów badania T03.
 Kolejność sekcji odpowiada mapie recenzenckiej.
 
+## Uwaga zero-loss
+- Ten plik jest materialem pomocniczym do czytania i eksportu.
+- Kanoniczne zrodlo merytoryki pozostaje w dokumentach zrodlowych `.md`.
+- Rejestr Source of Truth jest w `01-INDEKS-ARTEFAKTOW-OKF-LITE.md`.
+
 ---
 
 # Źródło: Karta-Badania.md

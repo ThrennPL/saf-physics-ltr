@@ -1,0 +1,79 @@
+{
+  "case_id": "T04-GR-PPN-Yukawa-Perihelion",
+  "checks": [
+    {
+      "id": "TD-P1",
+      "name": "Kompletnosc manuskryptu",
+      "argv": [
+        "tools/manuscript_completeness_check.py",
+        "Badania/T04-GR-PPN-Yukawa-Perihelion/Publikacja-Merytoryczna-T04.md"
+      ]
+    },
+    {
+      "id": "TD-P2",
+      "name": "Spojnosc definicji",
+      "argv": [
+        "tools/definition_consistency_check.py",
+        "--root",
+        ".",
+        "--include-glob",
+        "Badania/T04-GR-PPN-Yukawa-Perihelion/Raport-Wyprowadzen-LTR.md",
+        "--include-glob",
+        "Badania/T04-GR-PPN-Yukawa-Perihelion/Publikacja-Merytoryczna-T04.md"
+      ]
+    },
+    {
+      "id": "TD-P3",
+      "name": "Harness CAS",
+      "argv": [
+        "tools/cas_test_harness.py",
+        "--config",
+        "Badania/T04-GR-PPN-Yukawa-Perihelion/cas-tests-config.json",
+        "--report",
+        "Badania/T04-GR-PPN-Yukawa-Perihelion/Wyniki-CAS-T04.md"
+      ]
+    },
+    {
+      "id": "TD-P4",
+      "name": "Provenance parametrow",
+      "argv": [
+        "tools/parameter_provenance_check.py",
+        "Badania/T04-GR-PPN-Yukawa-Perihelion/Plan-Danych.md"
+      ]
+    },
+    {
+      "id": "TD-P5",
+      "name": "Pipeline wykresow",
+      "argv": [
+        "tools/chart_artifact_pipeline_check.py",
+        "--spec",
+        "Badania/T04-GR-PPN-Yukawa-Perihelion/Wykresy-Spec-T04.json",
+        "--index",
+        "Badania/T04-GR-PPN-Yukawa-Perihelion/Wykresy-Indeks-T04.md"
+      ]
+    },
+    {
+      "id": "TD-P6",
+      "name": "Split manuskrypt-suplement",
+      "argv": [
+        "tools/manuscript_supplement_splitter.py",
+        "--config",
+        "Badania/T04-GR-PPN-Yukawa-Perihelion/Split-Manuskrypt-Suplement-T04.json"
+      ]
+    },
+    {
+      "id": "TD-P7",
+      "name": "Traceability recenzencka",
+      "argv": [
+        "tools/review_traceability_generator.py",
+        "--matrix",
+        "Badania/T04-GR-PPN-Yukawa-Perihelion/MACIERZ_WDROZENIA_UWAG_RECENZENTA.md",
+        "--output",
+        "Badania/T04-GR-PPN-Yukawa-Perihelion/Odpowiedz-Recenzent-Traceability-T04.md",
+        "--case-id",
+        "T04-GR-PPN-Yukawa-Perihelion",
+        "--suppress-open-blocker-warning"
+      ]
+    }
+  ]
+}

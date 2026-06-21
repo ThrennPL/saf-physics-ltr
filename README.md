@@ -216,7 +216,9 @@ CI also enforces MCP drift checks in `.github/workflows/security-mcp-gate.yml`.
 ## P0 Process Pack
 - Operational runbook: `Dokumentacja/Runbook-Gate-Executor.md`.
 - Build minimal evidence packet:
-	- `python tools/build_evidence_packet.py --owner "HUMAN_OWNER" --decision pending`
+	- `python tools/build_evidence_packet.py --owner "HUMAN_OWNER" --decision pending --gate-id G3 --manifest-mode inline --strict-metadata --artifact "Dokumentacja/Konsolidacja-Statusow.md|Warning|Initial consolidation" --artifact "Dokumentacja/Rejestr-Konfliktow-i-Eskalacji.md|Warning|Initial conflict register" --artifact "Dokumentacja/Podsumowanie-Gate.md|Warning|Final decision pending owner review" --require-artifact Dokumentacja/Konsolidacja-Statusow.md --require-artifact Dokumentacja/Rejestr-Konfliktow-i-Eskalacji.md --require-artifact Dokumentacja/Podsumowanie-Gate.md`
+	- `--strict-metadata` is fail-closed: missing critical artifacts or `Missing/Blocker` status stops the process.
+	- Zero-loss guard: the generator builds index/status metadata and does not move scientific content out of case artifacts.
 - Taxonomy drift guard (alias map + canonical terms):
 	- `python tools/taxonomy_guard.py`
 - Combined task in VS Code:

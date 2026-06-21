@@ -1,0 +1,35 @@
+{
+  "case_id": "T04-GR-PPN-Yukawa-Perihelion",
+  "charts": [
+    {
+      "id": "T04-CH-001",
+      "title": "Precesja Yukawy vs lambda",
+      "x_axis": "lambda",
+      "y_axis": "Delta_phi_Y",
+      "units": "lambda[m], Delta_phi_Y[arcsec/century]",
+      "legend": "beta (warianty)",
+      "caption": "Precesja skladowej Yukawy w funkcji lambda dla reprezentatywnych beta.",
+      "file": "wykresy/t04-precesja-vs-lambda.png"
+    },
+    {
+      "id": "T04-CH-002",
+      "title": "Mapa konturowa (beta, lambda)",
+      "x_axis": "beta",
+      "y_axis": "lambda",
+      "units": "beta[-], lambda[m], Delta_phi_Y[arcsec/century]",
+      "legend": "Poziomice Delta_phi_Y",
+      "caption": "Mapa czulosci modelu Yukawy w przestrzeni parametrow (beta, lambda).",
+      "file": "wykresy/t04-mapa-beta-lambda.png"
+    },
+    {
+      "id": "T04-CH-003",
+      "title": "Porownanie skladnikow precesji",
+      "x_axis": "wariant testu",
+      "y_axis": "precesja",
+      "units": "precesja[arcsec/century]",
+      "legend": "1PN vs Yukawa vs suma",
+      "caption": "Porownanie skladowej 1PN, skladowej Yukawy i sumy dla scenariuszy testowych.",
+      "file": "wykresy/t04-porownanie-skladnikow.png"
+    }
+  ]
+}

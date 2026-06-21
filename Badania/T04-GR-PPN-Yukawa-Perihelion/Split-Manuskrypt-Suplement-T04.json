@@ -1,0 +1,27 @@
+{
+  "source": "Publikacja-Merytoryczna-T04.md",
+  "manuscript_output": "Publikacja-Merytoryczna-T04-Manuskrypt.md",
+  "supplement_output": "Publikacja-Merytoryczna-T04-Suplement-Procesowy.md",
+  "report_output": "Raport-Split-Manuskrypt-Suplement-T04.md",
+  "manuscript_title": "# Publikacja merytoryczna T04 (wersja manuskrypt)",
+  "supplement_title": "# Suplement procesowy T04",
+  "default_target": "manuscript",
+  "rules": [
+    {
+      "pattern": "^Metadane$",
+      "target": "supplement"
+    },
+    {
+      "pattern": "^Aneks A\\.",
+      "target": "supplement"
+    },
+    {
+      "pattern": "^Aneks B\\.",
+      "target": "supplement"
+    },
+    {
+      "pattern": "^Aneks C\\.",
+      "target": "supplement"
+    }
+  ]
+}
