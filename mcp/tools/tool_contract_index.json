@@ -1,0 +1,31 @@
+{
+  "version": "1.0.0",
+  "contracts": [
+    {"tool_contract": "Tool.ArxivSearch", "implementation": "tools/arxiv_search.py", "criticality": "high"},
+    {"tool_contract": "Tool.AdsSearch", "implementation": "tools/ads_search.py", "criticality": "high"},
+    {"tool_contract": "Tool.LintLTR", "implementation": "tools/lint_ltr.py", "criticality": "high"},
+    {"tool_contract": "Tool.CASValidate", "implementation": "tools/cas_test_harness.py", "criticality": "high"},
+    {"tool_contract": "Tool.BinetNumericValidation", "implementation": "tools/binet_numeric_validation_t04.py", "criticality": "medium"},
+    {"tool_contract": "Tool.DefinitionConsistency", "implementation": "tools/definition_consistency_check.py", "criticality": "high"},
+    {"tool_contract": "Tool.ParameterProvenance", "implementation": "tools/parameter_provenance_check.py", "criticality": "high"},
+    {"tool_contract": "Tool.SecuritySanity", "implementation": "tools/security_sanity_check.py", "criticality": "high"},
+    {"tool_contract": "Tool.TaxonomyGuard", "implementation": "tools/taxonomy_guard.py", "criticality": "high"},
+    {"tool_contract": "Tool.ContractGuard", "implementation": "tools/contract_guard.py", "criticality": "high"},
+    {"tool_contract": "Tool.EvidencePacket", "implementation": "tools/build_evidence_packet.py", "criticality": "high"},
+    {"tool_contract": "Tool.ReviewTraceability", "implementation": "tools/review_traceability_generator.py", "criticality": "medium"},
+    {"tool_contract": "Tool.ProcessSuite", "implementation": "tools/process_suite_runner.py", "criticality": "high"},
+    {"tool_contract": "Tool.McpBaseline", "implementation": "tools/mcp_baseline.py", "criticality": "medium"},
+    {"tool_contract": "Tool.RouteModel", "implementation": "tools/route_model.py", "criticality": "medium"},
+    {"tool_contract": "Tool.MigrationMetricsReport", "implementation": "tools/migration_metrics_report.py", "criticality": "medium"},
+    {"tool_contract": "Tool.GateTimingLogger", "implementation": "tools/gate_timing_logger.py", "criticality": "medium"},
+    {"tool_contract": "Tool.OpsCycleRunner", "implementation": "tools/ops_cycle_runner.py", "criticality": "high"},
+    {"tool_contract": "Tool.OwnerWeeklySummary", "implementation": "tools/owner_weekly_summary.py", "criticality": "medium"},
+    {"tool_contract": "Tool.OpsHealthSnapshot", "implementation": "tools/ops_health_snapshot.py", "criticality": "medium"},
+    {"tool_contract": "Tool.EscalationNotifier", "implementation": "tools/escalation_notifier.py", "criticality": "high"},
+    {"tool_contract": "Tool.EscalationQueueManager", "implementation": "tools/escalation_queue_manager.py", "criticality": "high"},
+    {"tool_contract": "Tool.GenerateT04Charts", "implementation": "tools/generate_t04_charts.py", "criticality": "medium"},
+    {"tool_contract": "Tool.ChartPipelineCheck", "implementation": "tools/chart_artifact_pipeline_check.py", "criticality": "medium"},
+    {"tool_contract": "Tool.ManuscriptCompleteness", "implementation": "tools/manuscript_completeness_check.py", "criticality": "low"},
+    {"tool_contract": "Tool.ManuscriptSplitter", "implementation": "tools/manuscript_supplement_splitter.py", "criticality": "low"}
+  ]
+}

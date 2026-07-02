@@ -1,0 +1,75 @@
+{
+  "version": "1.0.0",
+  "bindings": [
+    {
+      "agent_file": ".github/agents/research-orkiestrator.agent.md",
+      "agent_name": "research-orkiestrator",
+      "skill_ids": ["SK-008", "SK-010"]
+    },
+    {
+      "agent_file": ".github/agents/formal-consistency.agent.md",
+      "agent_name": "formal-consistency",
+      "skill_ids": ["SK-001"]
+    },
+    {
+      "agent_file": ".github/agents/model-review.agent.md",
+      "agent_name": "model-review",
+      "skill_ids": ["SK-002"]
+    },
+    {
+      "agent_file": ".github/agents/cross-reference.agent.md",
+      "agent_name": "cross-reference",
+      "skill_ids": ["SK-003"]
+    },
+    {
+      "agent_file": ".github/agents/physics-discovery.agent.md",
+      "agent_name": "physics-discovery",
+      "skill_ids": ["SK-003"]
+    },
+    {
+      "agent_file": ".github/agents/data-quality.agent.md",
+      "agent_name": "data-quality",
+      "skill_ids": ["SK-004"]
+    },
+    {
+      "agent_file": ".github/agents/risk-compliance.agent.md",
+      "agent_name": "risk-compliance",
+      "skill_ids": ["SK-005"]
+    },
+    {
+      "agent_file": ".github/agents/artifact-quality.agent.md",
+      "agent_name": "artifact-quality",
+      "skill_ids": ["SK-006"]
+    },
+    {
+      "agent_file": ".github/agents/technical-developer.agent.md",
+      "agent_name": "technical-developer",
+      "skill_ids": ["SK-007"]
+    },
+    {
+      "agent_file": ".github/agents/simulation-experiment.agent.md",
+      "agent_name": "simulation-experiment",
+      "skill_ids": ["SK-009"]
+    },
+    {
+      "agent_file": ".github/agents/statistics-review.agent.md",
+      "agent_name": "statistics-review",
+      "skill_ids": ["SK-010"]
+    },
+    {
+      "agent_file": ".github/agents/knowledge-repo.agent.md",
+      "agent_name": "knowledge-repo",
+      "skill_ids": ["SK-006"]
+    },
+    {
+      "agent_file": ".github/agents/language-polish-quality.agent.md",
+      "agent_name": "language-polish-quality",
+      "skill_ids": ["SK-006"]
+    },
+    {
+      "agent_file": ".github/agents/socratic-mentor.agent.md",
+      "agent_name": "socratic-mentor",
+      "skill_ids": ["SK-002"]
+    }
+  ]
+}

@@ -1,0 +1,419 @@
+{
+  "version": "1.0.0",
+  "skills": [
+    {
+      "skill_id": "SK-001",
+      "name": "Notation Consistency Skill",
+      "owner": "formal-consistency",
+      "status": "active",
+      "input": {
+        "required_fields": [
+          "artifact_paths",
+          "notation_map_ref"
+        ]
+      },
+      "output": {
+        "required_fields": [
+          "status",
+          "summary",
+          "diagnostics",
+          "confidence",
+          "questions"
+        ]
+      },
+      "error": {
+        "required_fields": [
+          "code",
+          "reason",
+          "recoverable",
+          "escalation_required"
+        ]
+      },
+      "tool_contracts": [
+        "Tool.LintLTR",
+        "Tool.DefinitionConsistency"
+      ],
+      "tool_implementations": [
+        "tools/lint_ltr.py",
+        "tools/definition_consistency_check.py"
+      ],
+      "instructions": [
+        "Dokumentacja/Instructions/notation.instructions.md"
+      ]
+    },
+    {
+      "skill_id": "SK-002",
+      "name": "Mathematical Validation Skill",
+      "owner": "model-review",
+      "status": "active",
+      "input": {
+        "required_fields": [
+          "equations_ref",
+          "validation_profile"
+        ]
+      },
+      "output": {
+        "required_fields": [
+          "status",
+          "summary",
+          "diagnostics",
+          "confidence",
+          "questions"
+        ]
+      },
+      "error": {
+        "required_fields": [
+          "code",
+          "reason",
+          "recoverable",
+          "escalation_required"
+        ]
+      },
+      "tool_contracts": [
+        "Tool.CASValidate",
+        "Tool.BinetNumericValidation"
+      ],
+      "tool_implementations": [
+        "tools/cas_test_harness.py",
+        "tools/binet_numeric_validation_t04.py"
+      ],
+      "instructions": [
+        "Dokumentacja/Instructions/notation.instructions.md"
+      ]
+    },
+    {
+      "skill_id": "SK-003",
+      "name": "Literature Search Skill",
+      "owner": "cross-reference",
+      "status": "active",
+      "input": {
+        "required_fields": [
+          "query",
+          "sources",
+          "filters"
+        ]
+      },
+      "output": {
+        "required_fields": [
+          "status",
+          "summary",
+          "diagnostics",
+          "confidence",
+          "citations"
+        ]
+      },
+      "error": {
+        "required_fields": [
+          "code",
+          "reason",
+          "recoverable",
+          "escalation_required"
+        ]
+      },
+      "tool_contracts": [
+        "Tool.ArxivSearch",
+        "Tool.AdsSearch"
+      ],
+      "tool_implementations": [
+        "tools/arxiv_search.py",
+        "tools/ads_search.py"
+      ],
+      "instructions": [
+        "Dokumentacja/Instructions/literature.instructions.md"
+      ]
+    },
+    {
+      "skill_id": "SK-004",
+      "name": "Data Provenance Skill",
+      "owner": "data-quality",
+      "status": "active",
+      "input": {
+        "required_fields": [
+          "data_artifacts",
+          "scope"
+        ]
+      },
+      "output": {
+        "required_fields": [
+          "status",
+          "summary",
+          "diagnostics",
+          "confidence",
+          "questions"
+        ]
+      },
+      "error": {
+        "required_fields": [
+          "code",
+          "reason",
+          "recoverable",
+          "escalation_required"
+        ]
+      },
+      "tool_contracts": [
+        "Tool.ParameterProvenance"
+      ],
+      "tool_implementations": [
+        "tools/parameter_provenance_check.py"
+      ],
+      "instructions": [
+        "Dokumentacja/Instructions/reporting.instructions.md"
+      ]
+    },
+    {
+      "skill_id": "SK-005",
+      "name": "Risk Sanity Skill",
+      "owner": "risk-compliance",
+      "status": "active",
+      "input": {
+        "required_fields": [
+          "governance_artifacts"
+        ]
+      },
+      "output": {
+        "required_fields": [
+          "status",
+          "summary",
+          "diagnostics",
+          "confidence",
+          "risks"
+        ]
+      },
+      "error": {
+        "required_fields": [
+          "code",
+          "reason",
+          "recoverable",
+          "escalation_required"
+        ]
+      },
+      "tool_contracts": [
+        "Tool.SecuritySanity",
+        "Tool.TaxonomyGuard"
+      ],
+      "tool_implementations": [
+        "tools/security_sanity_check.py",
+        "tools/taxonomy_guard.py"
+      ],
+      "instructions": [
+        "Dokumentacja/Instructions/quality-gates.instructions.md"
+      ]
+    },
+    {
+      "skill_id": "SK-006",
+      "name": "Evidence Packaging Skill",
+      "owner": "artifact-quality",
+      "status": "active",
+      "input": {
+        "required_fields": [
+          "gate_id",
+          "owner",
+          "decision",
+          "artifacts"
+        ]
+      },
+      "output": {
+        "required_fields": [
+          "status",
+          "summary",
+          "diagnostics",
+          "confidence",
+          "packet_path"
+        ]
+      },
+      "error": {
+        "required_fields": [
+          "code",
+          "reason",
+          "recoverable",
+          "escalation_required"
+        ]
+      },
+      "tool_contracts": [
+        "Tool.EvidencePacket",
+        "Tool.ReviewTraceability"
+      ],
+      "tool_implementations": [
+        "tools/build_evidence_packet.py",
+        "tools/review_traceability_generator.py"
+      ],
+      "instructions": [
+        "Dokumentacja/Instructions/reporting.instructions.md"
+      ]
+    },
+    {
+      "skill_id": "SK-007",
+      "name": "Process Suite Skill",
+      "owner": "technical-developer",
+      "status": "active",
+      "input": {
+        "required_fields": [
+          "config_path",
+          "cycle_mode"
+        ]
+      },
+      "output": {
+        "required_fields": [
+          "status",
+          "summary",
+          "diagnostics",
+          "confidence",
+          "per_check_result"
+        ]
+      },
+      "error": {
+        "required_fields": [
+          "code",
+          "reason",
+          "recoverable",
+          "escalation_required"
+        ]
+      },
+      "tool_contracts": [
+        "Tool.ProcessSuite",
+        "Tool.ContractGuard"
+      ],
+      "tool_implementations": [
+        "tools/process_suite_runner.py",
+        "tools/contract_guard.py"
+      ],
+      "instructions": [
+        "Dokumentacja/Instructions/tool-contracts.instructions.md"
+      ]
+    },
+    {
+      "skill_id": "SK-008",
+      "name": "Operations Governance Skill",
+      "owner": "research-orkiestrator",
+      "status": "active",
+      "input": {
+        "required_fields": [
+          "cycle_type",
+          "log_paths"
+        ]
+      },
+      "output": {
+        "required_fields": [
+          "status",
+          "summary",
+          "diagnostics",
+          "confidence",
+          "operations_snapshot"
+        ]
+      },
+      "error": {
+        "required_fields": [
+          "code",
+          "reason",
+          "recoverable",
+          "escalation_required"
+        ]
+      },
+      "tool_contracts": [
+        "Tool.OpsCycleRunner",
+        "Tool.OwnerWeeklySummary",
+        "Tool.OpsHealthSnapshot",
+        "Tool.EscalationQueueManager",
+        "Tool.EscalationNotifier"
+      ],
+      "tool_implementations": [
+        "tools/ops_cycle_runner.py",
+        "tools/owner_weekly_summary.py",
+        "tools/ops_health_snapshot.py",
+        "tools/escalation_queue_manager.py",
+        "tools/escalation_notifier.py"
+      ],
+      "instructions": [
+        "Dokumentacja/Instructions/quality-gates.instructions.md",
+        "Dokumentacja/Instructions/reporting.instructions.md"
+      ]
+    },
+    {
+      "skill_id": "SK-009",
+      "name": "Chart and Manuscript Skill",
+      "owner": "simulation-experiment",
+      "status": "candidate",
+      "input": {
+        "required_fields": [
+          "dataset_ref",
+          "chart_spec",
+          "manuscript_ref"
+        ]
+      },
+      "output": {
+        "required_fields": [
+          "status",
+          "summary",
+          "diagnostics",
+          "confidence",
+          "artifact_index"
+        ]
+      },
+      "error": {
+        "required_fields": [
+          "code",
+          "reason",
+          "recoverable",
+          "escalation_required"
+        ]
+      },
+      "tool_contracts": [
+        "Tool.GenerateT04Charts",
+        "Tool.ChartPipelineCheck",
+        "Tool.ManuscriptCompleteness",
+        "Tool.ManuscriptSplitter"
+      ],
+      "tool_implementations": [
+        "tools/generate_t04_charts.py",
+        "tools/chart_artifact_pipeline_check.py",
+        "tools/manuscript_completeness_check.py",
+        "tools/manuscript_supplement_splitter.py"
+      ],
+      "instructions": [
+        "Dokumentacja/Instructions/reporting.instructions.md"
+      ]
+    },
+    {
+      "skill_id": "SK-010",
+      "name": "Metrics and Timing Skill",
+      "owner": "research-orkiestrator",
+      "status": "active",
+      "input": {
+        "required_fields": [
+          "case_id",
+          "gate_events"
+        ]
+      },
+      "output": {
+        "required_fields": [
+          "status",
+          "summary",
+          "diagnostics",
+          "confidence",
+          "metrics_report"
+        ]
+      },
+      "error": {
+        "required_fields": [
+          "code",
+          "reason",
+          "recoverable",
+          "escalation_required"
+        ]
+      },
+      "tool_contracts": [
+        "Tool.MigrationMetricsReport",
+        "Tool.GateTimingLogger",
+        "Tool.McpBaseline"
+      ],
+      "tool_implementations": [
+        "tools/migration_metrics_report.py",
+        "tools/gate_timing_logger.py",
+        "tools/mcp_baseline.py"
+      ],
+      "instructions": [
+        "Dokumentacja/Instructions/reporting.instructions.md"
+      ]
+    }
+  ]
+}

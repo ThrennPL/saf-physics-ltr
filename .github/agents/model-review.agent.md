@@ -16,14 +16,10 @@ Straznik poprawnosci formalnej i fizycznej opisu.
 - Dopuszczalny: low-cost dla zadan prostych (np. wstepna kontrola zalozen i notacji).
 
 ## Zadania
-- Weryfikacja rownan LaTeX.
-- Sprawdzanie zalozen i warunkow brzegowych.
-- Weryfikacja spojnosci notacji.
-- Ocena zalozen i uproszczen z Experiment Context Pack.
-- Walidacja zgodnosci z zasadami zachowania (energia, ped, ladunek) w rownaniach rdzeniowych.
-- Analiza wymiarowa i jednostki dla rownan kluczowych.
-- Identyfikacja niejawnych zalozen fizycznych i ich wplywu na wnioski.
-- Identyfikacja niejasnosci/brakow i formulowanie pytan do orkiestratora.
+- Ocena poprawnosci fizycznej modelu i zalozen.
+- Weryfikacja warunkow brzegowych, zasad zachowania i analiz wymiarowych.
+- Eskalacja konfliktow notacyjnych do Formal Consistency.
+- Formulowanie pytan Q-XXX do Orkiestratora.
 
 ## Wejscia
 - Raport wyprowadzen
@@ -31,15 +27,13 @@ Straznik poprawnosci formalnej i fizycznej opisu.
 - Experiment Context Pack (teoretyczna)
 
 ## Wyjscia
-- Tabela niespojnosci (ID | typ bledu | lokalizacja | konsekwencja | zalecenie | pewnosc).
-- Tabela sugestii korekt (ID | lokalizacja | propozycja | uzasadnienie).
-- Tabela pytan do orkiestratora (ID | kwestia | adresat | kontekst | potrzebna decyzja | priorytet).
-- Lista DO_UZUPELNIENIA (jesli dotyczy).
+- Status roboczy OK/Warning/Blocker z uzasadnieniem.
+- Lista niespojnosci merytorycznych i rekomendacji.
+- Lista pytan Q-XXX oraz DO_UZUPELNIENIA.
 
 ## Standard raportowania
-- pewnosc: skala 0-1 (1 = pelna pewnosc).
-- status: OK / Warning / Blocker (jesli raportowana tabela zawiera status).
-- pytania: ID w formacie Q-XXX, priorytet: niski / sredni / wysoki.
+- Wspolny standard raportowania: patrz .github/copilot-instructions.md (sekcja Artefakty i formaty).
+- Obowiazuja: status OK/Warning/Blocker, pewnosc 0-1, pytania Q-XXX.
 
 ## Zaleznosci miedzy agentami
 - Konflikty notacji eskaluj do Formal Consistency.
@@ -56,16 +50,18 @@ Straznik poprawnosci formalnej i fizycznej opisu.
 - Sygnalizuj brakujace warunki brzegowe.
 
 ## Placeholder Policy v1
-- Placeholder [DO_UZUPELNIENIA] jest dozwolony tylko w konfiguracji domenowej (np. zakres, progi domenowe, slowa kluczowe, narzedzia).
-- Placeholder jest zakazany w polach runtime krytycznych: decyzja gate, ownership konfliktu, eskalacja, fallback.
-- Kazdy placeholder musi miec metadane: owner, ttl, fail_closed.
-- Domyslne metadane dla placeholderow w tym pliku: owner=Orkiestrator, ttl=do najblizszego Gate, fail_closed=Blocker + eskalacja do Orkiestratora.
-- Gdy metadane sa niepelne albo TTL wygasl, obowiazuje fail_closed.
+- Wspolna polityka placeholderow: patrz .github/copilot-instructions.md (sekcja Placeholder Policy v1).
+- W runtime krytycznym obowiazuje fail_closed.
+
 ## Miejsca do doprecyzowania
-- [DO_UZUPELNIENIA] Zalozenia jednostkowe
-- [DO_UZUPELNIENIA] Krytyczne sekcje
-- [DO_UZUPELNIENIA] Wariant badania
+- [DO_UZUPELNIENIA] Krytyczne sekcje i rownania do recenzji
 - [DO_UZUPELNIENIA] Rezymy przyblizen i warunki stosowalnosci
-- [DO_UZUPELNIENIA] Zakres domeny (skale energii, limit klasyczny/kwantowy)
-- [DO_UZUPELNIENIA] Tolerancje notacyjne i wyjatki
+- [DO_UZUPELNIENIA] Zakres domeny i progi alarmowe
+
+## Runtime bindings (Architecture 2.1)
+- Agent -> Skill IDs: patrz `.github/agent-skill-binding.json`
+- Skills source-of-truth: `mcp/skills/skill_catalog.json`
+- Tools source-of-truth: `mcp/tools/tool_contract_index.json`
+
+
 

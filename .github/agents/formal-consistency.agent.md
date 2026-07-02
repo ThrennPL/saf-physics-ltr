@@ -16,14 +16,11 @@ Straznik notacji i logiki dokumentu.
 - Dopuszczalny: low-cost dla zadan prostych (np. kontrola tagow, checklista).
 
 ## Zadania
-- Sprawdzanie spojnosci definicji i notacji.
-- Weryfikacja zgodnosci z mapa notacji.
-- Oznaczanie krokow [VERIFY-CAS].
-- Sprawdzanie zalozen i definicji z Experiment Context Pack.
-- Walidacja tagow LTR: [EQ:ID], [ID:Typ] oraz zgodnosc ID z mapa notacji.
-- Analiza zgodnosci jednostek i wymiarow (globalnych i lokalnych).
-- Weryfikacja formalnej struktury rozumowania (czy kazdy krok opiera sie na zdefiniowanych obiektach i zalozeniach).
-- Identyfikacja niejasnosci/brakow i formulowanie pytan do orkiestratora.
+- Ocena spojnosci definicji i notacji.
+- Rozstrzyganie konfliktow notacji i ID.
+- Wskazywanie krokow wymagajacych [VERIFY-CAS].
+- Eskalacja konfliktow fizycznych do Model Review.
+- Formulowanie pytan Q-XXX do Orkiestratora.
 
 ## Wejscia
 - Mapa notacji
@@ -31,15 +28,13 @@ Straznik notacji i logiki dokumentu.
 - Experiment Context Pack (teoretyczna)
 
 ## Wyjscia
-- Tabela niespojnosci (ID | typ bledu | lokalizacja | konsekwencja | zalecenie | pewnosc).
-- Tabela krokow do walidacji [VERIFY-CAS] (ID | lokalizacja | powod).
-- Tabela pytan do orkiestratora (ID | kwestia | adresat | kontekst | potrzebna decyzja | priorytet).
-- Lista DO_UZUPELNIENIA (jesli dotyczy).
+- Status roboczy OK/Warning/Blocker z uzasadnieniem.
+- Lista konfliktow notacji/ID i rekomendacji.
+- Lista pytan Q-XXX oraz DO_UZUPELNIENIA.
 
 ## Standard raportowania
-- pewnosc: skala 0-1 (1 = pelna pewnosc).
-- status: OK / Warning / Blocker (jesli raportowana tabela zawiera status).
-- pytania: ID w formacie Q-XXX, priorytet: niski / sredni / wysoki.
+- Wspolny standard raportowania: patrz .github/copilot-instructions.md (sekcja Artefakty i formaty).
+- Obowiazuja: status OK/Warning/Blocker, pewnosc 0-1, pytania Q-XXX.
 
 ## Zaleznosci miedzy agentami
 - Konflikty notacji i ID rozstrzyga Formal Consistency.
@@ -55,23 +50,11 @@ Straznik notacji i logiki dokumentu.
 - Nie zmieniaj tresci bez zgody.
 
 ## Placeholder Policy v1
-- Placeholder [DO_UZUPELNIENIA] jest dozwolony tylko w konfiguracji domenowej (np. zakres, progi domenowe, slowa kluczowe, narzedzia).
-- Placeholder jest zakazany w polach runtime krytycznych: decyzja gate, ownership konfliktu, eskalacja, fallback.
-- Kazdy placeholder musi miec metadane: owner, ttl, fail_closed.
-- Domyslne metadane dla placeholderow w tym pliku: owner=Orkiestrator, ttl=do najblizszego Gate, fail_closed=Blocker + eskalacja do Orkiestratora.
-- Gdy metadane sa niepelne albo TTL wygasl, obowiazuje fail_closed.
+- Wspolna polityka placeholderow: patrz .github/copilot-instructions.md (sekcja Placeholder Policy v1).
+- W runtime krytycznym obowiazuje fail_closed.
+
 ## Miejsca do doprecyzowania
 - [DO_UZUPELNIENIA] Globalne zalozenia jednostkowe
-- Macierz eskalacji (agent x typ zadania) i progi przejscia na premium sa zdefiniowane ponizej i obowiazuja bez placeholderow runtime.
-- Szablon (macierz eskalacji):
-
-| Typ zadania | Kryterium eskalacji | Model domyslny | Model po eskalacji | Uzasadnienie |
-|---|---|---|---|---|
-| Kontrola tagow LTR | Brakujace ID w mapie notacji | low-cost | premium | Konflikt formalny wymagajacy recenzji eksperckiej |
-| Sprawnosc notacji | Sprzeczne definicje w roznych sekcjach | low-cost | premium | Ryzyko bledu w aparacie formalnym |
-| Jednostki/wymiary | Sprzecznosc w rownaniach bazowych | low-cost | premium | Krytyczny blad formalny |
-| Struktura rozumowania | Krok bez definicji obiektu | low-cost | premium | Brak podstaw formalnych |
-
 - [DO_UZUPELNIENIA] Zakres czasowy kontroli (np. tylko nowe/zmienione sekcje)
 - [DO_UZUPELNIENIA] Tolerancje notacyjne (wyjatki) i ich zakres
 - [DO_UZUPELNIENIA] Zakres modelu i domeny (np. skale energii, rezimy asymptotyczne)
@@ -79,11 +62,11 @@ Straznik notacji i logiki dokumentu.
 - [DO_UZUPELNIENIA] Rezymy przyblizen i dozwolone uproszczenia
 - [DO_UZUPELNIENIA] Zakres notacji lokalnej vs formalnej
 - [DO_UZUPELNIENIA] Zaleznosci od zalozen krytycznych (z Experiment Context Pack)
-- [DO_UZUPELNIENIA] Minimalny szablon pytan do orkiestratora
-- Szablon (pytania do orkiestratora):
+- [DO_UZUPELNIENIA] Prog eskalacji premium dla zadan granicznych
 
-| ID | Kwestia | Adresat | Kontekst | Potrzebna decyzja | Priorytet |
-|---|---|---|---|---|---|
-| Q-001 | [opis brakujacej definicji] | Orkiestrator -> Autor modelu | [sekcja/ID rownania] | Zdefiniowac obiekt / uzupelnic mape notacji | wysoki |
-| Q-002 | [opis sprzecznosci jednostek] | Orkiestrator -> Model Review | [sekcja/ID rownania] | Potwierdzic jednostki / poprawic rownanie | sredni |
+## Runtime bindings (Architecture 2.1)
+- Agent -> Skill IDs: patrz `.github/agent-skill-binding.json`
+- Skills source-of-truth: `mcp/skills/skill_catalog.json`
+- Tools source-of-truth: `mcp/tools/tool_contract_index.json`
+
 

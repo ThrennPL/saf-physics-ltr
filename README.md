@@ -1,5 +1,7 @@
 # SAF Physics LTR ⚛️ **Science 2.0 Operating System**
 
+**SAF Physics LTR is an operating system for theoretical research. It does not replace scientists—it replaces the repetitive, error-prone coordination work surrounding scientific research while preserving full human oversight.**
+
 **Multi-agent research platform** for SAF/LTR workflows in theoretical physics.
 ✅ Human-in-the-loop quality gates | Formal consistency checks | Literature cross-reference
 ⭐ **Fork, star, contribute!**
@@ -46,7 +48,7 @@ python tools/arxiv_search.py "lagrangian stability" --max 5
 - Gate review delays → **Automated Quality Gates G1-G4**
 
 ## Core Architecture
-13 Specialized Agents:
+14 Specialized Agents:
 - Research Orchestrator: routes workstreams, coordinates gate transitions, aggregates statuses.
 - Formal Consistency: validates notation/ID consistency and resolves notation conflicts.
 - Model Review: resolves physical and domain-level conflicts.
@@ -56,10 +58,22 @@ python tools/arxiv_search.py "lagrangian stability" --max 5
 - Statistics Review: evaluates uncertainty/CI and inference robustness.
 - Risk & Compliance: tracks risk posture and fail-closed conditions.
 - Simulation/Experiment: prepares executable variants and reproducibility checks.
+- Socratic Mentor: challenges assumptions, edge cases, and hidden contradictions.
 - Artifact Quality: consolidates outputs into gate-ready evidence packets.
 - Knowledge Repo: normalizes terminology and reuse taxonomy.
 - Language Polish Quality: mandatory PL editorial validation before finalization/PDF.
 - Technical Developer: code patches, automation, and tooling incident handling.
+
+## Architecture 2.1: Layered Runtime (Environment Scope)
+The environment now uses a layered runtime split where governance and execution contracts are explicit and validated fail-closed:
+
+- Agents: orchestration, ownership, escalation (`.github/agents/`).
+- Skills catalog: runtime mapping of reusable skills (`mcp/skills/skill_catalog.json`).
+- Tool contracts: stable interface between skills and tools (`mcp/tools/tool_contract_index.json`).
+- Backend layer: backend interface and capabilities (`mcp/backends/`).
+- Guardrails validation: contract integrity and agent-skill coverage (`python tools/contract_guard.py`).
+
+This change is environment-focused: it improves maintainability and runtime consistency without changing human gate ownership (HITL remains unchanged).
 
 ## Orchestration Flow
 Default execution order and hard dependencies:
@@ -223,3 +237,17 @@ CI also enforces MCP drift checks in `.github/workflows/security-mcp-gate.yml`.
 	- `python tools/taxonomy_guard.py`
 - Combined task in VS Code:
 	- `quality-gates-plus-p0`
+	- `stage-f-contract-guard` (Workflow/Capability/Skill/Tool contract validation)
+	- `dual-run-stage-f` (legacy P0 path + T04 process-suite)
+	- `quality-gates-plus-p0-process-suite` (full chain; includes `stage-f-contract-guard` via `p0-process-check`)
+	- `migration-metrics-report` (periodic MM-001..MM-005 migration metrics report)
+	- `gate-timing-report` (Gate 1-4 telemetry aggregation from `docs/operations/gate_timing_log.jsonl`)
+	- `build-offline` (attempt package build using `python -m build` without isolation)
+	- `build-smoke-offline` (fallback build check via `python -m pip install . --no-deps --no-build-isolation`)
+	- `quality-gates-offline` (lint+test+typecheck+build-smoke-offline)
+	- `owner-weekly-summary` (weekly owner summary from operations cycle logs)
+
+Windows scheduler automation:
+	- register tasks: `powershell -ExecutionPolicy Bypass -File tools/scheduler/register_windows_tasks.ps1`
+	- runner: `tools/scheduler/run_ops_cycle.ps1`
+	- scheduler log: `docs/operations/scheduler_runs.log`

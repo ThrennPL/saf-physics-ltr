@@ -73,6 +73,18 @@ Jezyk: PL. Preferuj ASCII. Markdown-first.
 - Artifact Quality: tools/build_evidence_packet.py, tools/taxonomy_guard.py (kontrola kompletnosci i spojnosci paczki).
 - Pozostale role (Data Quality, Model Review, Physics Discovery, Socratic Mentor): dzialanie proceduralne do czasu doprecyzowania dedykowanych narzedzi domenowych.
 
+## Source-of-truth runtime (layered architecture)
+- Skills runtime: `mcp/skills/skill_catalog.json`
+- Tool contracts runtime: `mcp/tools/tool_contract_index.json`
+- Backend interface: `mcp/backends/backend_interface.contract.json`
+- Backend capabilities: `mcp/backends/backend_capabilities.json`
+- Agent -> Skill bindings: `.github/agent-skill-binding.json`
+
+Zasada:
+- Profile agentow w `.github/agents` definiuja ownership, routing i eskalacje.
+- Kontrakty wykonawcze sa utrzymywane w `mcp/*` i uruchamiane przez `tools/skill_runner.py`.
+- Polityki przekrojowe nie powinny byc kopiowane 1:1 w wielu agentach; preferuj referencje do source-of-truth.
+
 ## Zachowanie modelu
 - Nie halucynuj literatury; oznacz poziom zaufania i preprint vs peer-reviewed.
 - Nie edytuj tresci merytorycznej bez zgody; proponuj zmiany.

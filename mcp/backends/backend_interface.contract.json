@@ -1,0 +1,24 @@
+{
+  "contract_id": "scientific_backend.v1",
+  "version": "1.0.0",
+  "required_methods": [
+    "capability_check",
+    "execute",
+    "validate",
+    "export_trace"
+  ],
+  "required_metadata": [
+    "backend_name",
+    "backend_version",
+    "execution_mode",
+    "input_hash",
+    "runtime_limits",
+    "started_at",
+    "finished_at"
+  ],
+  "fail_closed_rules": [
+    "missing_required_metadata => Blocker",
+    "contract_output_violation => Blocker",
+    "backend_must_not_override_gate_semantics"
+  ]
+}

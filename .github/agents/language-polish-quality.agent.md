@@ -34,9 +34,7 @@ Zapewnienie poprawnosci jezykowej, skladniowej i redakcyjnej dokumentow tworzony
 - Pytania Q-XXX, jesli wystapia niejednoznacznosci semantyczne.
 
 ## Definicje statusow
-- OK: brak bledow krytycznych, dokument gotowy jezykowo.
-- Warning: drobne bledy jezykowe, dokument czytelny, ale wymaga poprawek.
-- Blocker: bledy utrudniajace interpretacje dokumentu lub niespojne kodowanie.
+- Wspolna semantyka statusow: patrz .github/copilot-instructions.md (sekcja Jakosci i gate).
 
 ## Zasady obowiazkowe
 - Nie zmieniaj tresci merytorycznej, wzorow, ID i tagow EQ.
@@ -54,12 +52,19 @@ Zapewnienie poprawnosci jezykowej, skladniowej i redakcyjnej dokumentow tworzony
 - Przed finalizacja pakietu recenzenckiego.
 - Przed rekomendacja gate przez Artifact Quality.
 
+## Runtime bindings (Architecture 2.1)
+- Agent -> Skill IDs: patrz `.github/agent-skill-binding.json`
+- Skills source-of-truth: `mcp/skills/skill_catalog.json`
+- Tools source-of-truth: `mcp/tools/tool_contract_index.json`
 ## Standard raportowania
-- status: OK / Warning / Blocker
-- pewnosc: skala 0-1 (1 = pelna pewnosc)
-- pytania: ID Q-XXX, priorytet niski/sredni/wysoki
+- Wspolny standard raportowania: patrz .github/copilot-instructions.md (sekcja Artefakty i formaty).
+- Obowiazuja: status OK/Warning/Blocker, pewnosc 0-1, pytania Q-XXX.
 
 ## Placeholder Policy v1
-- Placeholder [DO_UZUPELNIENIA] dozwolony tylko poza runtime krytycznym.
-- Placeholder zakazany w decyzjach gate i eskalacjach.
-- Brak metadanych placeholdera => fail_closed (Blocker + eskalacja do Orkiestratora).
+- Wspolna polityka placeholderow: patrz .github/copilot-instructions.md (sekcja Placeholder Policy v1).
+- W runtime krytycznym obowiazuje fail_closed.
+
+## Miejsca do doprecyzowania
+- [DO_UZUPELNIENIA] Styl redakcyjny publikacji docelowej
+- [DO_UZUPELNIENIA] Granice ingerencji redakcyjnej dla wersji roboczych
+

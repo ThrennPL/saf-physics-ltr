@@ -1,0 +1,86 @@
+{
+  "version": "1.0.0",
+  "backends": [
+    {
+      "backend_id": "BE-SYMPY",
+      "name": "SymPy",
+      "status": "active",
+      "capabilities": [
+        "symbolic"
+      ],
+      "tools": [
+        "tools/cas_test_harness.py"
+      ],
+      "supports": {
+        "capability_check": true,
+        "execute": true,
+        "validate": true,
+        "export_trace": false
+      }
+    },
+    {
+      "backend_id": "BE-NUMPY",
+      "name": "NumPy",
+      "status": "active",
+      "capabilities": [
+        "numeric"
+      ],
+      "tools": [
+        "tools/binet_numeric_validation_t04.py"
+      ],
+      "supports": {
+        "capability_check": true,
+        "execute": true,
+        "validate": true,
+        "export_trace": false
+      }
+    },
+    {
+      "backend_id": "BE-MATPLOTLIB",
+      "name": "Matplotlib",
+      "status": "active",
+      "capabilities": [
+        "visualization"
+      ],
+      "tools": [
+        "tools/generate_t04_charts.py"
+      ],
+      "supports": {
+        "capability_check": true,
+        "execute": true,
+        "validate": false,
+        "export_trace": false
+      }
+    },
+    {
+      "backend_id": "BE-SCIPY",
+      "name": "SciPy",
+      "status": "candidate",
+      "capabilities": [
+        "statistical"
+      ],
+      "tools": [],
+      "supports": {
+        "capability_check": false,
+        "execute": false,
+        "validate": false,
+        "export_trace": false
+      }
+    },
+    {
+      "backend_id": "BE-JAX",
+      "name": "JAX",
+      "status": "candidate",
+      "capabilities": [
+        "numeric-hpc"
+      ],
+      "tools": [],
+      "supports": {
+        "capability_check": false,
+        "execute": false,
+        "validate": false,
+        "export_trace": false
+      }
+    }
+  ]
+}

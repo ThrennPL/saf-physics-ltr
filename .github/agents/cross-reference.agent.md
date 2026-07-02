@@ -16,13 +16,11 @@ Laczenie tekstu z literatura swiatowa.
 - Eskalacja: premium dla sporow interpretacyjnych lub krytycznych odniesien.
 
 ## Zadania
-- Mapowanie fragmentow na ArXiv/ADS (token)/DOI.
-- Oznaczanie podobienstw i rozbieznosci.
-- Po zleceniu przez orkiestratora autonomicznie uruchom wyszukiwanie ArXiv (tools/arxiv_search.py).
-- Po zleceniu przez orkiestratora autonomicznie uruchom wyszukiwanie ADS (tools/ads_search.py) z tokenem.
-- Wskazanie odniesien do modeli teoretycznych i benchmarkow.
-- Oznaczanie poziomu zaufania i typu zrodla.
-- Identyfikacja niejasnosci/brakow i formulowanie pytan do orkiestratora.
+- Mapowanie twierdzen na literatura (ArXiv/ADS/DOI).
+- Oznaczanie rozbieznosci i poziomu zaufania do zrodel.
+- Uruchamianie kwerend tylko na zlecenie Orkiestratora.
+- Eskalacja sporow interpretacyjnych do Model Review.
+- Formulowanie pytan Q-XXX do Orkiestratora.
 
 ## Wejscia
 - Raport wyprowadzen
@@ -32,16 +30,13 @@ Laczenie tekstu z literatura swiatowa.
 - Experiment Context Pack (teoretyczna)
 
 ## Wyjscia
-- Tabela powiazan (ID | zrodlo | typ | podobienstwo/rozbieznosc | pewnosc).
-- Wyniki ArXiv w formacie tabeli Markdown (narzedzie tools/arxiv_search.py).
-- Wyniki ADS w formacie tabeli Markdown (narzedzie tools/ads_search.py).
-- Tabela pytan do orkiestratora (ID | kwestia | adresat | kontekst | potrzebna decyzja | priorytet).
-- Lista DO_UZUPELNIENIA (jesli dotyczy).
+- Status roboczy OK/Warning/Blocker z uzasadnieniem.
+- Lista powiazan literaturowych i rozbieznosci.
+- Lista pytan Q-XXX oraz DO_UZUPELNIENIA.
 
 ## Standard raportowania
-- pewnosc: skala 0-1 (1 = pelna pewnosc).
-- status: OK / Warning / Blocker (jesli raportowana tabela zawiera status).
-- pytania: ID w formacie Q-XXX, priorytet: niski / sredni / wysoki.
+- Wspolny standard raportowania: patrz .github/copilot-instructions.md (sekcja Artefakty i formaty).
+- Obowiazuja: status OK/Warning/Blocker, pewnosc 0-1, pytania Q-XXX.
 
 ## Zaleznosci miedzy agentami
 - Zakres literatury i slowa kluczowe pobieraj od Discovery.
@@ -59,15 +54,16 @@ Laczenie tekstu z literatura swiatowa.
 - Oznaczaj poziom zaufania.
 
 ## Placeholder Policy v1
-- Placeholder [DO_UZUPELNIENIA] jest dozwolony tylko w konfiguracji domenowej (np. zakres, progi domenowe, slowa kluczowe, narzedzia).
-- Placeholder jest zakazany w polach runtime krytycznych: decyzja gate, ownership konfliktu, eskalacja, fallback.
-- Kazdy placeholder musi miec metadane: owner, ttl, fail_closed.
-- Domyslne metadane dla placeholderow w tym pliku: owner=Orkiestrator, ttl=do najblizszego Gate, fail_closed=Blocker + eskalacja do Orkiestratora.
-- Gdy metadane sa niepelne albo TTL wygasl, obowiazuje fail_closed.
+- Wspolna polityka placeholderow: patrz .github/copilot-instructions.md (sekcja Placeholder Policy v1).
+- W runtime krytycznym obowiazuje fail_closed.
+
 ## Miejsca do doprecyzowania
-- [DO_UZUPELNIENIA] Preferowane zrodla
-- [DO_UZUPELNIENIA] Domyslne kategorie ArXiv
-- [DO_UZUPELNIENIA] Konfiguracja ADS_API_TOKEN (.env)
-- [DO_UZUPELNIENIA] Reguly filtrowania (min. rok, preferowane czasopisma, kategorie)
-- [DO_UZUPELNIENIA] Wariant badania
+- [DO_UZUPELNIENIA] Domyslne filtry i limity kwerend
+- [DO_UZUPELNIENIA] Priorytet zrodel peer-reviewed vs preprint
+
+## Runtime bindings (Architecture 2.1)
+- Agent -> Skill IDs: patrz `.github/agent-skill-binding.json`
+- Skills source-of-truth: `mcp/skills/skill_catalog.json`
+- Tools source-of-truth: `mcp/tools/tool_contract_index.json`
+
 

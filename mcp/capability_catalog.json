@@ -1,0 +1,53 @@
+{
+  "version": "1.0.0",
+  "capabilities": [
+    {
+      "capability_id": "CAP-ORCH-ROUTING",
+      "name": "Routing and Model Selection",
+      "skills": [
+        "research-orkiestrator",
+        "formal-consistency"
+      ],
+      "tools": [
+        "tools/route_model.py"
+      ]
+    },
+    {
+      "capability_id": "CAP-LIT-SEARCH",
+      "name": "Literature Discovery",
+      "skills": [
+        "cross-reference",
+        "physics-discovery"
+      ],
+      "tools": [
+        "tools/arxiv_search.py",
+        "tools/ads_search.py"
+      ]
+    },
+    {
+      "capability_id": "CAP-QUALITY-LTR",
+      "name": "Formal and Quality Validation",
+      "skills": [
+        "artifact-quality",
+        "risk-compliance"
+      ],
+      "tools": [
+        "tools/lint_ltr.py",
+        "tools/security_sanity_check.py",
+        "tools/taxonomy_guard.py"
+      ]
+    },
+    {
+      "capability_id": "CAP-EVIDENCE-PACK",
+      "name": "Evidence and Traceability Packaging",
+      "skills": [
+        "knowledge-repo",
+        "artifact-quality"
+      ],
+      "tools": [
+        "tools/build_evidence_packet.py",
+        "tools/review_traceability_generator.py"
+      ]
+    }
+  ]
+}

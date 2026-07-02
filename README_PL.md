@@ -54,7 +54,7 @@ python tools/arxiv_search.py "lagrangian stability" --max 5
 
 
 ## Architektura (agenci)
-13 wyspecjalizowanych agentow:
+14 wyspecjalizowanych agentow:
 - Research Orchestrator: routing strumieni, przejscia gate, agregacja statusow.
 - Formal Consistency: spojnosc notacji/ID i rozstrzyganie konfliktow notacyjnych.
 - Model Review: rozstrzyganie konfliktow fizycznych i merytorycznych.
@@ -64,10 +64,22 @@ python tools/arxiv_search.py "lagrangian stability" --max 5
 - Statistics Review: ocena niepewnosci/CI i odpornosci wnioskowania.
 - Risk & Compliance: kontrola ryzyk i warunkow fail-closed.
 - Simulation/Experiment: przygotowanie wariantow wykonania i reprodukowalnosci.
+- Socratic Mentor: kwestionowanie zalozen, przypadkow granicznych i ukrytych sprzecznosci.
 - Artifact Quality: konsolidacja wynikow do pakietu gate-ready.
 - Knowledge Repo: normalizacja slownika i ponowne wykorzystanie artefaktow.
 - Language Polish Quality: obowiazkowa walidacja jezykowa PL przed finalizacja/PDF.
 - Technical Developer: poprawki kodu, automatyzacje i obsluga incydentow narzedziowych.
+
+## Architecture 2.1: warstwa runtime (zakres srodowiskowy)
+Srodowisko dziala teraz w modelu warstwowym, gdzie governance i kontrakty wykonawcze sa jawne oraz walidowane fail-closed:
+
+- Agenci: orkiestracja, ownership, eskalacja (`.github/agents/`).
+- Katalog skills: mapowanie runtime skilli (`mcp/skills/skill_catalog.json`).
+- Kontrakty tools: stabilny interfejs skill->tool (`mcp/tools/tool_contract_index.json`).
+- Warstwa backend: interfejs backendow i capabilities (`mcp/backends/`).
+- Walidacja guardrails: spojnosc kontraktow i pokrycie agent-skill (`python tools/contract_guard.py`).
+
+Zmiana ma charakter srodowiskowy: poprawia utrzymanie i spojnosc runtime bez zmiany ownership decyzji gate (HITL bez zmian).
 
 ## Przeplyw orkiestracji
 Domyslna kolejnosc i zaleznosci:
@@ -251,3 +263,17 @@ W CI dziala tez bramka dryfu MCP: `.github/workflows/security-mcp-gate.yml`.
 	- `python tools/taxonomy_guard.py`
 - Zadanie laczone w VS Code:
 	- `quality-gates-plus-p0`
+	- `stage-f-contract-guard` (walidacja kontraktow Workflow/Capability/Skill/Tool)
+	- `dual-run-stage-f` (sciezka legacy P0 + process-suite T04)
+	- `quality-gates-plus-p0-process-suite` (pelny lancuch; zawiera `stage-f-contract-guard` przez `p0-process-check`)
+	- `migration-metrics-report` (cykliczny raport MM-001..MM-005 do Architecture 2.0)
+	- `gate-timing-report` (agregacja telemetryczna czasu Gate 1-4 z docs/operations/gate_timing_log.jsonl)
+	- `build-offline` (proba pakietowania przez `python -m build` bez izolacji)
+	- `build-smoke-offline` (fallback przez `python -m pip install . --no-deps --no-build-isolation`)
+	- `quality-gates-offline` (lint+test+typecheck+build-smoke-offline)
+	- `owner-weekly-summary` (raport tygodniowy ownera z logu cykli)
+
+Automatyzacja harmonogramu (Windows):
+	- rejestracja: `powershell -ExecutionPolicy Bypass -File tools/scheduler/register_windows_tasks.ps1`
+	- runner: `tools/scheduler/run_ops_cycle.ps1`
+	- log scheduler: `docs/operations/scheduler_runs.log`
