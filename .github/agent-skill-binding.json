@@ -44,7 +44,7 @@
     {
       "agent_file": ".github/agents/technical-developer.agent.md",
       "agent_name": "technical-developer",
-      "skill_ids": ["SK-007"]
+      "skill_ids": ["SK-007", "SK-011"]
     },
     {
       "agent_file": ".github/agents/simulation-experiment.agent.md",

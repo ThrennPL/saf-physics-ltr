@@ -414,6 +414,45 @@
       "instructions": [
         "Dokumentacja/Instructions/reporting.instructions.md"
       ]
+    },
+    {
+      "skill_id": "SK-011",
+      "name": "n8n Automation Skill",
+      "owner": "technical-developer",
+      "status": "active",
+      "input": {
+        "required_fields": [
+          "workflow_id",
+          "action"
+        ]
+      },
+      "output": {
+        "required_fields": [
+          "status",
+          "summary",
+          "diagnostics",
+          "confidence"
+        ]
+      },
+      "error": {
+        "required_fields": [
+          "code",
+          "reason",
+          "recoverable",
+          "escalation_required"
+        ]
+      },
+      "tool_contracts": [
+        "Tool.N8nSync",
+        "Tool.QaRunnerService"
+      ],
+      "tool_implementations": [
+        "tools/n8n_sync.py",
+        "tools/qa_runner_service.py"
+      ],
+      "instructions": [
+        "Dokumentacja/Instructions/tool-contracts.instructions.md"
+      ]
     }
   ]
 }

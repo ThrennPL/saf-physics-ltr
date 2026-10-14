@@ -26,6 +26,8 @@
     {"tool_contract": "Tool.GenerateT04Charts", "implementation": "tools/generate_t04_charts.py", "criticality": "medium"},
     {"tool_contract": "Tool.ChartPipelineCheck", "implementation": "tools/chart_artifact_pipeline_check.py", "criticality": "medium"},
     {"tool_contract": "Tool.ManuscriptCompleteness", "implementation": "tools/manuscript_completeness_check.py", "criticality": "low"},
-    {"tool_contract": "Tool.ManuscriptSplitter", "implementation": "tools/manuscript_supplement_splitter.py", "criticality": "low"}
+    {"tool_contract": "Tool.ManuscriptSplitter", "implementation": "tools/manuscript_supplement_splitter.py", "criticality": "low"},
+    {"tool_contract": "Tool.N8nSync", "implementation": "tools/n8n_sync.py", "criticality": "high"},
+    {"tool_contract": "Tool.QaRunnerService", "implementation": "tools/qa_runner_service.py", "criticality": "high"}
   ]
 }

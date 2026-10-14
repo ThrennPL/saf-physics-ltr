@@ -1,0 +1,291 @@
+{
+  "name": "Repo QA - raport (reczny)",
+  "nodes": [
+    {
+      "id": "9921e6ff-b641-4ceb-b602-ee6492f5a7c1",
+      "name": "Start reczny",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "59b77140-0cd7-4405-ba70-a2165e46ce24",
+      "name": "Kontrola lint_ltr",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8765/v1/checks/lint_ltr",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8e4bLYteAM1T0RS5",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "ad86f536-0510-448c-956c-aec335158444",
+      "name": "Kontrola taxonomy_guard",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8765/v1/checks/taxonomy_guard",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8e4bLYteAM1T0RS5",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "b7a61260-2597-406b-8685-d8f0e6094a7c",
+      "name": "Kontrola pytest",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8765/v1/checks/pytest",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8e4bLYteAM1T0RS5",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "220fa255-964b-4e04-9e8e-7eeb68ff0599",
+      "name": "Agregacja i raport",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const checks = [\n  $(\"Kontrola lint_ltr\").first().json,\n  $(\"Kontrola taxonomy_guard\").first().json,\n  $(\"Kontrola pytest\").first().json,\n];\nconst sev = { OK: 0, Warning: 1, Blocker: 2 };\nconst status = checks.reduce((h, c) => (sev[c.status] > sev[h] ? c.status : h), \"OK\");\nconst summary = status === \"OK\" ? \"Wszystkie kontrole repozytorium zakonczone pomyslnie.\" : status + \": przejrzyj wyniki kontroli ponizej.\";\nconst ts = new Date().toISOString();\nconst rows = checks.map(c => \"| \" + c.check + \" | \" + c.status + \" | \" + c.exit_code + \" | \" + c.duration_ms + \" |\").join(\"\\n\");\nconst details = checks.map(c => \"### \" + c.check + \"\\n\\n```\\n\" + String(c.stdout || \"\").trim().slice(0, 1500) + (c.stderr ? \"\\n[stderr] \" + String(c.stderr).trim().slice(0, 500) : \"\") + \"\\n```\").join(\"\\n\\n\");\nconst report = \"# Raport kontroli jakosci repozytorium\\n\\n- Data (UTC): \" + ts + \"\\n- Status zbiorczy: **\" + status + \"**\\n- Podsumowanie: \" + summary + \"\\n\\n## Wyniki\\n\\n| Kontrola | Status | Kod wyjscia | Czas [ms] |\\n|---|---|---|---|\\n\" + rows + \"\\n\\n## Szczegoly\\n\\n\" + details + \"\\n\\n## Uwagi\\n\\n- Status roboczy; nie stanowi decyzji gate (decyduje czlowiek).\\n\";\nconst fname = \"qa-\" + ts.replace(/[:.]/g, \"-\") + \".md\";\nreturn [{ json: { status, summary, checks, report, fname } }];"
+      }
+    },
+    {
+      "id": "ff93b192-b652-4d46-a948-d3cedb6009ef",
+      "name": "Przygotuj plik raportu",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        -160
+      ],
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst bin = await this.helpers.prepareBinaryData(Buffer.from(d.report, \"utf8\"), d.fname, \"text/markdown\");\nreturn [{ json: { fname: d.fname }, binary: { data: bin } }];"
+      }
+    },
+    {
+      "id": "8ade7272-d31f-4487-805f-626a34a6ac42",
+      "name": "Zapis raportu",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        -160
+      ],
+      "parameters": {
+        "dataPropertyName": "data",
+        "operation": "write",
+        "fileName": "=/data/reports/{{$json.fname}}",
+        "options": {}
+      }
+    },
+    {
+      "id": "bd0e7e5f-ee97-4921-bf56-1541a7663ea8",
+      "name": "Czy status OK",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "51281f2f-c031-4c6f-b5ca-f1dba0f0aa60",
+              "leftValue": "={{$json.status}}",
+              "rightValue": "OK",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "6a346e2f-f340-4abe-95a9-051384718768",
+      "name": "Format alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        120
+      ],
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst bad = d.checks.filter(c => c.status !== \"OK\").map(c => c.check + \"=\" + c.status).join(\", \");\nconst line = new Date().toISOString() + \" | \" + d.status + \" | \" + bad + \" | \" + d.summary + \"\\n\";\nconst bin = await this.helpers.prepareBinaryData(Buffer.from(line, \"utf8\"), \"qa-alerts.log\", \"text/plain\");\nreturn [{ json: { status: d.status, line }, binary: { data: bin } }];"
+      }
+    },
+    {
+      "id": "18797c44-bcbe-400d-9b78-635d7ad51d1a",
+      "name": "Zapis alertu",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        1568,
+        120
+      ],
+      "parameters": {
+        "dataPropertyName": "data",
+        "operation": "write",
+        "fileName": "/data/qa-alerts.log",
+        "options": {
+          "append": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start reczny": {
+      "main": [
+        [
+          {
+            "node": "Kontrola lint_ltr",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kontrola lint_ltr": {
+      "main": [
+        [
+          {
+            "node": "Kontrola taxonomy_guard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kontrola taxonomy_guard": {
+      "main": [
+        [
+          {
+            "node": "Kontrola pytest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kontrola pytest": {
+      "main": [
+        [
+          {
+            "node": "Agregacja i raport",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agregacja i raport": {
+      "main": [
+        [
+          {
+            "node": "Czy status OK",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Przygotuj plik raportu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Przygotuj plik raportu": {
+      "main": [
+        [
+          {
+            "node": "Zapis raportu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Czy status OK": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Format alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format alert": {
+      "main": [
+        [
+          {
+            "node": "Zapis alertu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

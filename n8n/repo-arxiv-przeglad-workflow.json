@@ -1,0 +1,389 @@
+{
+  "name": "Przeglad literatury arXiv (reczny)",
+  "nodes": [
+    {
+      "id": "fe1d5d42-9617-475e-a300-02882f3e0e91",
+      "name": "Formularz",
+      "webhookId": "209a678d-50e9-4efc-b279-0b11aeebef4a",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "formTitle": "Przeglad literatury arXiv",
+        "formDescription": "Podaj frazy (jedna w linii, maks. 5), kategorie arXiv oddzielone przecinkami i liczbe wynikow na fraze.",
+        "path": "repo-arxiv-przeglad",
+        "responseMode": "onReceived",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Frazy",
+              "fieldType": "textarea",
+              "requiredField": true,
+              "placeholder": "np. Yukawa perihelion precession",
+              "defaultValue": "Yukawa perihelion precession\nYukawa post-Newtonian gravity solar system constraints"
+            },
+            {
+              "fieldLabel": "Kategorie",
+              "fieldType": "text",
+              "placeholder": "gr-qc, hep-th",
+              "defaultValue": "gr-qc"
+            },
+            {
+              "fieldLabel": "Max wynikow na fraze",
+              "fieldType": "number",
+              "defaultValue": 5
+            }
+          ]
+        },
+        "options": {
+          "respondWhen": "responseNode"
+        }
+      }
+    },
+    {
+      "id": "6b7a12e5-f6a7-4c32-befb-1af5b33cf850",
+      "name": "Przygotuj zapytania",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const f = $input.first().json;\nconst phrases = String(f[\"Frazy\"] || \"\").split(/\\r?\\n/).map(s => s.trim()).filter(Boolean).slice(0, 5);\nconst categories = String(f[\"Kategorie\"] || \"\").split(/[,\\s]+/).map(s => s.trim()).filter(Boolean).slice(0, 5);\nconst max = Math.min(20, Math.max(1, parseInt(f[\"Max wynikow na fraze\"], 10) || 5));\nif (!phrases.length) { throw new Error(\"Brak fraz wyszukiwania (pole Frazy).\"); }\nreturn phrases.map(query => ({ json: { query, categories, max } }));"
+      }
+    },
+    {
+      "id": "7d2360cc-7e6c-4e9a-98ef-2bc003d2d602",
+      "name": "Szukaj w arXiv",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "onError": "continueRegularOutput",
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8765/v1/literature/arxiv",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ query: $json.query, categories: $json.categories, max: $json.max }) }}",
+        "options": {
+          "timeout": 100000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8e4bLYteAM1T0RS5",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "6b48dc47-dd2d-4d52-be96-81493533f5e7",
+      "name": "Raport literatury",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const params = $(\"Przygotuj zapytania\").all().map(i => i.json);\nconst responses = $input.all().map(i => i.json);\nconst rowRe = /^\\|\\s*(\\S+)\\s*\\|\\s*(\\S+)\\s*\\|\\s*(.*?)\\s*\\|\\s*(.*)\\s*\\|\\s*(\\S+)\\s*\\|$/;\nconst seen = new Map();\nlet failed = 0, empty = 0;\nconst sections = params.map((p, i) => {\n  const r = responses[i] || {};\n  if (r.error || r.status === \"Blocker\" || (r.exit_code !== undefined && r.exit_code !== 0)) {\n    failed++;\n    return \"### \" + p.query + \"\\n\\nBlad wyszukiwania: \" + String(r.error ? (r.error.message || r.error) : (r.stderr || \"brak odpowiedzi\")).slice(0, 300) + \"\\n\";\n  }\n  const rows = String(r.stdout || \"\").split(\"\\n\").map(l => l.trim()).filter(l => rowRe.test(l) && !l.startsWith(\"| ArXiv ID\") && !l.startsWith(\"|---\")).map(l => l.match(rowRe));\n  if (!rows.length) { empty++; return \"### \" + p.query + \"\\n\\nBrak wynikow.\\n\"; }\n  const lines = rows.map(m => {\n    const id = m[1].replace(/v\\d+$/, \"\");\n    if (!seen.has(id)) seen.set(id, { id, date: m[2], authors: m[3], title: m[4], url: m[5], phrases: [p.query] });\n    else seen.get(id).phrases.push(p.query);\n    return \"| \" + id + \" | \" + m[2] + \" | \" + m[3] + \" | \" + m[4] + \" | \" + m[5] + \" |\";\n  });\n  return \"### \" + p.query + \"\\n\\n| ArXiv ID | Data | Autorzy | Tytul | URL |\\n|---|---|---|---|---|\\n\" + lines.join(\"\\n\") + \"\\n\";\n});\nconst status = failed === params.length ? \"Blocker\" : (failed || empty ? \"Warning\" : \"OK\");\nconst ts = new Date().toISOString();\nconst cats = params[0].categories.length ? params[0].categories.join(\", \") : \"wszystkie\";\nconst report = \"# Przeglad literatury arXiv\\n\\n- Data (UTC): \" + ts + \"\\n- Status roboczy: **\" + status + \"**\\n- Kategorie: \" + cats + \"\\n- Maks. wynikow na fraze: \" + params[0].max + \"\\n- Liczba fraz: \" + params.length + \"\\n- Unikalnych publikacji: \" + seen.size + \"\\n\\n## Wyniki dla fraz\\n\\n\" + sections.join(\"\\n\") + \"\\n## Uwagi\\n\\n- Zrodlo: arXiv (preprinty, brak recenzji); poziom zaufania nizszy niz peer-reviewed.\\n- Zestawienie wynikow wyszukiwania, bez oceny merytorycznej; selekcja nalezy do czlowieka.\\n- Wpisy do Cross-Reference-Log-LTR wymagaja weryfikacji i zgody wlasciciela badania.\\n\";\nconst fname = \"arxiv-\" + ts.replace(/[:.]/g, \"-\") + \".md\";\nconst bin = await this.helpers.prepareBinaryData(Buffer.from(report, \"utf8\"), fname, \"text/markdown\");\nconst pubs = Array.from(seen.values());\nreturn [{ json: { status, unique: seen.size, failed, empty, fname, pubs }, binary: { data: bin } }];"
+      }
+    },
+    {
+      "id": "052899ff-7824-4cc5-af4d-d5e9c8b68d4d",
+      "name": "Zapis raportu",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/data/reports/{{$json.fname}}",
+        "dataPropertyName": "data",
+        "options": {}
+      }
+    },
+    {
+      "id": "c7ddb959-a0f7-4043-97f5-8b95aa5d8c7d",
+      "name": "Wybor publikacji",
+      "webhookId": "e175cfbd-c799-4b1a-be02-9e03d72c6297",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "defineForm": "json",
+        "jsonOutput": "={{ $json.fields }}",
+        "formTitle": "Wybor publikacji",
+        "formDescription": "Zaznacz publikacje istotne dla badania. Zrodlo: arXiv (preprinty, bez recenzji).",
+        "options": {}
+      }
+    },
+    {
+      "id": "389b5766-4e21-4888-8c1f-e9025957d778",
+      "name": "Zloz wybor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const src = $(\"Raport literatury\").first().json;\nconst f = $input.first().json;\nconst chosen = [].concat(f[\"Publikacje\"] || []).map(String);\nconst ids = chosen.map(s => s.split(\" | \")[0].trim());\nconst sel = src.pubs.filter(p => ids.includes(p.id));\nconst ts = new Date().toISOString();\nconst topic = String(f[\"Temat badania\"] || \"\").trim();\nconst out = { generated_utc: ts, topic, source: \"arXiv (preprinty, brak recenzji)\", status: \"do_weryfikacji\", report_file: src.fname, selected: sel };\nconst fname = \"arxiv-wybor-\" + ts.replace(/[:.]/g, \"-\") + \".json\";\nconst bin = await this.helpers.prepareBinaryData(Buffer.from(JSON.stringify(out, null, 2), \"utf8\"), fname, \"application/json\");\nconst topicOk = /^[A-Za-z0-9][A-Za-z0-9._-]{0,80}$/.test(topic);\nconst doLog = topicOk && sel.length >= 1 && sel.length <= 20;\nconst logNote = doLog ? \"\" : (!topicOk ? \" Log badania pominiety: brak lub niepoprawny temat.\" : \" Log badania pominiety: wybierz od 1 do 20 pozycji.\");\nconst logBody = doLog ? { topic, publications: sel.map(p => ({ id: p.id, title: p.title, authors: p.authors, date: p.date, url: p.url })) } : null;\nreturn [{ json: { fname, count: sel.length, topic, doLog, logNote, logBody }, binary: { data: bin } }];"
+      }
+    },
+    {
+      "id": "7498ccd5-de58-4ae3-a50d-f8422eb34f76",
+      "name": "Zapis wyboru",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        1568,
+        0
+      ],
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/data/reports/{{$json.fname}}",
+        "dataPropertyName": "data",
+        "options": {}
+      }
+    },
+    {
+      "id": "91a89284-4e20-4cbd-b056-35b72d0b9d78",
+      "name": "Zakonczenie",
+      "webhookId": "35545206-a7d4-42e7-ae9b-7859adf474d5",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        2240,
+        0
+      ],
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Wybor zapisany",
+        "completionMessage": "={{ 'Zapisano ' + $('Zloz wybor').first().json.count + ' publikacji: reports/' + $('Zloz wybor').first().json.fname + ($('Dopisz do logu').isExecuted ? '. Log badania: dopisano ' + $('Dopisz do logu').first().json.added + ', pominieto (duplikaty) ' + ($('Dopisz do logu').first().json.skipped || []).length + '.' : '.' + $('Zloz wybor').first().json.logNote) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "1ca6c692-b8ad-40a5-bc2c-5f604b0464da",
+      "name": "Pola wyboru",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        -160
+      ],
+      "parameters": {
+        "jsCode": "const pubs = $(\"Raport literatury\").first().json.pubs;\nconst fields = [\n  { fieldLabel: \"Publikacje\", fieldType: \"checkbox\", fieldOptions: { values: pubs.map(p => ({ option: p.id + \" | \" + p.title.slice(0, 110) + \" | \" + p.date.slice(0, 4) })) } },\n  { fieldLabel: \"Temat badania\", fieldType: \"text\", placeholder: \"np. T04-GR-PPN-Yukawa-Perihelion\" }\n];\nreturn [{ json: { fields: JSON.stringify(fields) } }];"
+      }
+    },
+    {
+      "id": "4e2b6f9e-0297-4778-8c48-8e3fdf20f5d1",
+      "name": "Czy dopisac do logu",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1792,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "a1810d29-4e4c-47be-bb83-d522462c14d5",
+              "leftValue": "={{ $('Zloz wybor').first().json.doLog }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "0d68742a-010e-4399-8f4a-56e84a121eb8",
+      "name": "Dopisz do logu",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2016,
+        -120
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8765/v1/literature/log",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Zloz wybor').first().json.logBody) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8e4bLYteAM1T0RS5",
+          "name": "Header Auth account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Formularz": {
+      "main": [
+        [
+          {
+            "node": "Przygotuj zapytania",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Przygotuj zapytania": {
+      "main": [
+        [
+          {
+            "node": "Szukaj w arXiv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Szukaj w arXiv": {
+      "main": [
+        [
+          {
+            "node": "Raport literatury",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Raport literatury": {
+      "main": [
+        [
+          {
+            "node": "Zapis raportu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zapis raportu": {
+      "main": [
+        [
+          {
+            "node": "Pola wyboru",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wybor publikacji": {
+      "main": [
+        [
+          {
+            "node": "Zloz wybor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zloz wybor": {
+      "main": [
+        [
+          {
+            "node": "Zapis wyboru",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zapis wyboru": {
+      "main": [
+        [
+          {
+            "node": "Czy dopisac do logu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pola wyboru": {
+      "main": [
+        [
+          {
+            "node": "Wybor publikacji",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Czy dopisac do logu": {
+      "main": [
+        [
+          {
+            "node": "Dopisz do logu",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Zakonczenie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dopisz do logu": {
+      "main": [
+        [
+          {
+            "node": "Zakonczenie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

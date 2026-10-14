@@ -25,7 +25,7 @@ def search_arxiv(query: str, max_results: int, categories: Iterable[str]) -> lis
         max_results=max_results,
         sort_by=arxiv.SortCriterion.Relevance,
     )
-    return list(search.results())
+    return list(arxiv.Client().results(search))
 
 
 def main() -> int:

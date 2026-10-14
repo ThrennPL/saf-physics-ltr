@@ -71,6 +71,7 @@ Jezyk: PL. Preferuj ASCII. Markdown-first.
 - Risk Compliance: tools/security_sanity_check.py (podstawowy sanity-check ryzyk technicznych).
 - Knowledge Repo: tools/taxonomy_guard.py, tools/build_evidence_packet.py (normalizacja i pakietowanie artefaktow).
 - Artifact Quality: tools/build_evidence_packet.py, tools/taxonomy_guard.py (kontrola kompletnosci i spojnosci paczki).
+- Technical Developer: tools/n8n_sync.py (synchronizacja workflow n8n z JSON w repo przez API), tools/qa_runner_service.py (lokalny runner kontroli QA z allowlista dla n8n).
 - Pozostale role (Data Quality, Model Review, Physics Discovery, Socratic Mentor): dzialanie proceduralne do czasu doprecyzowania dedykowanych narzedzi domenowych.
 
 ## Source-of-truth runtime (layered architecture)
