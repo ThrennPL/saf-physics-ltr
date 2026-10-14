@@ -196,6 +196,19 @@ only appends a "Kandydaci literatury z arXiv" section (preprint, `do_weryfikacji
 already present, and does not touch the claim -> source table.
 Run the test form once per "Execute workflow" and use a single browser tab.
 
+Workflow "Repo - paczka przed gate (reczny)" (export `n8n/repo-gate-paczka-workflow.json`):
+a form takes a research topic and gate number (1-4). The read-only runner endpoint
+`POST /v1/gate/pack` reports required artifacts present/missing, literature log status,
+`DO_UZUPELNIENIA` counts and open vs closed `Q-XXX` identifiers (a question counts as closed when a line with its ID contains "zamkniete"/"zamknieto"; only open ones raise a Warning); the workflow adds lint_ltr,
+taxonomy_guard and pytest checks and writes a Polish report
+`reports/gate<N>-<topic>-<timestamp>.md` (status OK/Warning/Blocker, confidence 0-1).
+The report never recommends approving a gate; for Gate 3 it only notes the
+agent-conditional pass rule. Required artifacts per gate come from
+`Dokumentacja/Artefakty-Wymagania.md` (domain configuration `GATE_ARTIFACT_SOURCES`; each
+item lists its source). Only file presence is checked; scenario criteria from
+`Checklista-Research-Gate` are listed for human assessment, and each Warning/Blocker has
+owner/ETA columns (DO_UZUPELNIENIA).
+
 Rebuilding n8n from scratch: create the Header Auth credential (runner token) in the UI,
 then `python tools/n8n_sync.py restore n8n` creates all missing workflows from `n8n/*.json`
 (new IDs; reselect the credential in HTTP nodes if needed), and move them to `TheoreticalMD`. The test form

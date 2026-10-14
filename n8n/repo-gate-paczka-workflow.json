@@ -1,0 +1,303 @@
+{
+  "name": "Repo - paczka przed gate (reczny)",
+  "nodes": [
+    {
+      "id": "ec150d1d-fdd4-4921-86a6-d7dd7b22169d",
+      "name": "Formularz",
+      "webhookId": "5a878a57-2446-4478-8f88-667c30fcf859",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "formTitle": "Paczka przed gate",
+        "formDescription": "Podaj folder badania (Badania/<temat>) i numer gate (1-4). Raport jest tylko do odczytu.",
+        "path": "repo-gate-paczka",
+        "responseMode": "onReceived",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Temat badania",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "T04-GR-PPN-Yukawa-Perihelion"
+            },
+            {
+              "fieldLabel": "Gate",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "1"
+                  },
+                  {
+                    "option": "2"
+                  },
+                  {
+                    "option": "3"
+                  },
+                  {
+                    "option": "4"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "respondWhen": "responseNode"
+        }
+      }
+    },
+    {
+      "id": "fecdeed8-b36b-4cd1-b917-e012702dcaad",
+      "name": "Paczka gate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8765/v1/gate/pack",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ topic: String($json['Temat badania']).trim(), gate: Number($json['Gate']) }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8e4bLYteAM1T0RS5",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "fafe0bd6-8a3f-47eb-870b-92a9a2706e6f",
+      "name": "Kontrola lint_ltr",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8765/v1/checks/lint_ltr",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8e4bLYteAM1T0RS5",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "2b1638ef-dc6c-4f84-988b-f1449582addc",
+      "name": "Kontrola taxonomy_guard",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8765/v1/checks/taxonomy_guard",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8e4bLYteAM1T0RS5",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "35e4f1c5-a947-4137-813c-4c87496a8225",
+      "name": "Kontrola pytest",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8765/v1/checks/pytest",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8e4bLYteAM1T0RS5",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "1d1975b5-6571-43e6-a728-8c0e28723962",
+      "name": "Raport gate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const form = $(\"Formularz\").first().json;\nconst pack = $(\"Paczka gate\").first().json;\nconst checks = [\n  $(\"Kontrola lint_ltr\").first().json,\n  $(\"Kontrola taxonomy_guard\").first().json,\n  $(\"Kontrola pytest\").first().json,\n];\nconst sev = { OK: 0, Warning: 1, Blocker: 2 };\nconst all = [pack.status, ...checks.map(c => c.status)];\nconst status = all.reduce((h, s) => (sev[s] > sev[h] ? s : h), \"OK\");\nconst claims = pack.sources.claims_by_status;\nconst claimRows = Object.keys(claims).map(k => \"| \" + k + \" | \" + claims[k] + \" |\").join(\"\\n\") || \"| brak | 0 |\";\nconst missing = pack.artifacts.missing;\nconst qs = pack.markers.open_questions;\nconst qc = pack.markers.closed_questions;\nconst src = pack.artifacts.sources;\nconst artRows = pack.artifacts.required.map(a => \"| \" + a + \" | \" + (missing.includes(a) ? \"BRAK\" : \"obecny\") + \" | \" + src[a] + \" |\").join(\"\\n\");\nconst CHK = {\n  1: [\"Hipoteza i cel mierzalny\", \"Zakres i wykluczenia\", \"Plan badania\", \"Wariant badania (teoretyczna/eksperymentalna/computational)\", \"Zalozenia i uproszczenia jawnie opisane\", \"Definicje i oznaczenia kluczowe\"],\n  2: [\"Klasyfikacja danych\", \"Retencja i dostep\", \"Ryzyka z ownerem\", \"Parametry i warunki brzegowe opisane\", \"Plan walidacji wewnetrznej (analityczne lub benchmarki)\"],\n  3: [\"Reproducibility\", \"Niepewnosc i wrazliwosc\", \"Oddzielone wnioski od faktow\", \"Zbieznosc i stabilnosc numeryczna (jesli dotyczy)\", \"Replikacja wynikow (min. 2 warianty)\"],\n  4: [\"Akceptacje kompletne\", \"Wymagania raportowe\", \"Pelny zestaw artefaktow teoretycznych\"],\n}[pack.gate] || [];\nconst chkTxt = CHK.map(c => \"- [ ] \" + c + \" - do oceny przez czlowieka\").join(\"\\n\");\nconst actions = [];\nmissing.forEach(m => actions.push(\"| Blocker | Brak artefaktu \" + m + \" | [DO_UZUPELNIENIA] | [DO_UZUPELNIENIA] |\"));\nchecks.filter(c => c.status !== \"OK\").forEach(c => actions.push(\"| \" + c.status + \" | Kontrola \" + c.check + \" | [DO_UZUPELNIENIA] | [DO_UZUPELNIENIA] |\"));\nif (pack.sources.pending_preprints > 0) actions.push(\"| Warning | Preprinty do weryfikacji: \" + pack.sources.pending_preprints + \" | [DO_UZUPELNIENIA] | [DO_UZUPELNIENIA] |\");\nif (pack.markers.placeholders_total > 0) actions.push(\"| Warning | Znaczniki DO_UZUPELNIENIA: \" + pack.markers.placeholders_total + \" | [DO_UZUPELNIENIA] | [DO_UZUPELNIENIA] |\");\nif (qs.length > 0) actions.push(\"| Warning | Otwarte pytania Q-XXX (\" + qs.length + \"): \" + qs.join(\", \") + \" | [DO_UZUPELNIENIA] | [DO_UZUPELNIENIA] |\");\nconst actTxt = actions.length ? \"| Status | Pozycja | Owner | ETA |\\n|---|---|---|---|\\n\" + actions.join(\"\\n\") : \"Brak pozycji Warning/Blocker.\";\nconst ph = pack.markers.placeholders_top.map(p => \"| \" + p.file + \" | \" + p.count + \" |\").join(\"\\n\") || \"| brak | 0 |\";\nconst confidence = status === \"OK\" ? 0.8 : status === \"Warning\" ? 0.6 : 0.4;\nconst ts = new Date().toISOString();\nconst rows = checks.map(c => \"| \" + c.check + \" | \" + c.status + \" | \" + c.exit_code + \" |\").join(\"\\n\");\nconst details = checks.filter(c => c.status !== \"OK\").map(c => \"### \" + c.check + \"\\n\\n```\\n\" + String(c.stdout || \"\").trim().slice(0, 1200) + (c.stderr ? \"\\n[stderr] \" + String(c.stderr).trim().slice(0, 400) : \"\") + \"\\n```\").join(\"\\n\\n\");\nconst report = [\n  \"# Paczka przed Gate \" + pack.gate + \" - \" + pack.topic,\n  \"\",\n  \"- Data (UTC): \" + ts,\n  \"- Status roboczy: **\" + status + \"**\",\n  \"- Pewnosc: \" + confidence + \" (skala 0-1; ocena automatyczna, tylko kontrole formalne)\",\n  \"- Uwaga: raport nie jest decyzja gate i nie rekomenduje zatwierdzenia. Decyzje Gate 1/2/4 podejmuje czlowiek.\",\n  \"\",\n  \"## 1. Kontrole techniczne\",\n  \"\",\n  \"| Kontrola | Status | Kod wyjscia |\",\n  \"|---|---|---|\",\n  rows,\n  \"\",\n  details,\n  \"\",\n  \"## 2. Kompletnosc artefaktow (Gate \" + pack.gate + \")\",\n  \"\",\n  \"| Artefakt | Stan | Zrodlo wymagania |\",\n  \"|---|---|---|\",\n  artRows,\n  \"\",\n  \"Sprawdzana jest tylko obecnosc plikow, nie ich tresc.\",\n  \"\",\n  \"### Kryteria scenariusza (Checklista-Research-Gate) - ocena przez czlowieka\",\n  \"\",\n  chkTxt,\n  \"\",\n  \"## 3. Zrodla literatury\",\n  \"\",\n  \"| Status pozycji w logu | Liczba |\",\n  \"|---|---|\",\n  claimRows,\n  \"\",\n  \"- Preprinty oczekujace na weryfikacje (do_weryfikacji): \" + pack.sources.pending_preprints,\n  \"\",\n  \"## 4. Otwarte luki\",\n  \"\",\n  \"- Znaczniki DO_UZUPELNIENIA: \" + pack.markers.placeholders_total,\n  \"\",\n  \"| Plik | Liczba |\",\n  \"|---|---|\",\n  ph,\n  \"\",\n  \"- Otwarte Q-XXX (\" + qs.length + \"): \" + (qs.join(\", \") || \"brak\"),\n  \"- Zamkniete Q-XXX (\" + qc.length + \"): \" + (qc.join(\", \") || \"brak\"),\n  \"- Pytanie jest uznane za zamkniete, gdy linia z jego ID zawiera slowo zamkniete/zamknieto (heurystyka; [DO_UZUPELNIENIA] potwierdzenie).\",\n  \"\",\n  \"## 5. Dzialania korygujace (owner i ETA)\",\n  \"\",\n  actTxt,\n  \"\",\n  \"## 6. Podsumowanie\",\n  \"\",\n  pack.gate === 3 ? \"Gate 3: agent-conditional pass jest mozliwy tylko przy niskim ryzyku i statusie OK bez uwag krytycznych; ten raport go nie przyznaje.\" : \"\",\n  status === \"OK\" ? \"Brak krytycznych ryzykow formalnych.\" : status === \"Warning\" ? \"Ryzyka niekrytyczne: przejrzyj sekcje 3 i 4 przed decyzja.\" : \"Blocker: braki krytyczne (fail_closed) - eskalacja do Orkiestratora i czlowieka.\",\n  \"\",\n  \"## Pytania uzupelniajace\",\n  \"\",\n  \"- Q-001 (niski): czy raport ma uwzgledniac wynik process suite?\",\n  \"\",\n].join(\"\\n\");\nconst slug = pack.topic.replace(/[^A-Za-z0-9._-]/g, \"_\");\nconst fname = \"gate\" + pack.gate + \"-\" + slug + \"-\" + ts.replace(/[:.]/g, \"-\") + \".md\";\nreturn [{ json: { status, report, fname, confidence, topic: pack.topic, gate: pack.gate } }];"
+      }
+    },
+    {
+      "id": "db081bc2-422b-4ca3-9237-bfc49d32ded5",
+      "name": "Przygotuj plik raportu",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst bin = await this.helpers.prepareBinaryData(Buffer.from(d.report, 'utf8'), d.fname, 'text/markdown');\nreturn [{ json: { fname: d.fname, status: d.status }, binary: { data: bin } }];"
+      }
+    },
+    {
+      "id": "e6a2e8eb-69e0-474a-a9fd-40aabb236118",
+      "name": "Zapis raportu",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        1568,
+        0
+      ],
+      "parameters": {
+        "dataPropertyName": "data",
+        "operation": "write",
+        "fileName": "=/data/reports/{{$json.fname}}",
+        "options": {}
+      }
+    },
+    {
+      "id": "8ceca34e-8748-476a-ab41-2c4a2c6e678c",
+      "name": "Zakonczenie",
+      "webhookId": "a72eef08-25c4-47cc-af47-2c232e0a87e2",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        1792,
+        0
+      ],
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Raport gotowy",
+        "completionMessage": "={{ 'Status roboczy: ' + $('Raport gate').first().json.status + '. Raport: reports/' + $('Raport gate').first().json.fname }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Formularz": {
+      "main": [
+        [
+          {
+            "node": "Paczka gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paczka gate": {
+      "main": [
+        [
+          {
+            "node": "Kontrola lint_ltr",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kontrola lint_ltr": {
+      "main": [
+        [
+          {
+            "node": "Kontrola taxonomy_guard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kontrola taxonomy_guard": {
+      "main": [
+        [
+          {
+            "node": "Kontrola pytest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kontrola pytest": {
+      "main": [
+        [
+          {
+            "node": "Raport gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Raport gate": {
+      "main": [
+        [
+          {
+            "node": "Przygotuj plik raportu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Przygotuj plik raportu": {
+      "main": [
+        [
+          {
+            "node": "Zapis raportu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zapis raportu": {
+      "main": [
+        [
+          {
+            "node": "Zakonczenie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -236,3 +236,67 @@ def test_log_endpoint_rejects_bad_url_and_id(runner_server: str, log_root) -> No
         status, _ = _request(runner_server, "/v1/literature/log", method="POST",
                              body=_log_payload(publications=[pub]))
         assert status == 400
+
+
+def _gate_payload(**overrides: object) -> bytes:
+    payload: dict[str, object] = {"topic": "T99-Test", "gate": 1}
+    payload.update(overrides)
+    return json.dumps(payload).encode()
+
+
+def test_gate_pack_reports_missing_and_is_read_only(runner_server: str, log_root) -> None:
+    topic = log_root.parent
+    (topic / "Karta-Badania.md").write_text("# K\nQ-001 DO_UZUPELNIENIA\n", encoding="utf-8")
+    log_root.write_text(
+        "| Claim ID | x |\n|---|---|\n| T99-CL-001 | c | s | peer-reviewed | 0.9 | verified |\n"
+        "| 1105.2998 | d | a | t | u | preprint | do_weryfikacji |\n",
+        encoding="utf-8",
+    )
+    before = {p.name: p.read_bytes() for p in topic.iterdir()}
+    status, payload = _request(runner_server, "/v1/gate/pack", method="POST", body=_gate_payload())
+    assert status == 200
+    assert payload["status"] == "Blocker"
+    assert payload["artifacts"]["missing"] == ["Experiment-Context-Pack-Teoretyczna.md", "Orkiestrator-Log.md", "Plan-Strumieni.md"]
+    assert payload["markers"]["open_questions"] == ["Q-001"]
+    assert payload["markers"]["placeholders_total"] == 1
+    assert payload["sources"] == {"claims_by_status": {"verified": 1}, "pending_preprints": 1}
+    assert {p.name: p.read_bytes() for p in topic.iterdir()} == before
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [{"topic": "../x"}, {"topic": "T98-Missing"}, {"gate": 5}, {"gate": True}, {"gate": "1"}, {"extra": 1}],
+)
+def test_gate_pack_rejects_invalid(runner_server: str, log_root, overrides: dict) -> None:
+    status, _ = _request(runner_server, "/v1/gate/pack", method="POST", body=_gate_payload(**overrides))
+    assert status == 400
+
+
+def test_gate_pack_only_open_questions_warn(runner_server: str, log_root) -> None:
+    topic = log_root.parent
+    for name in (
+        "Karta-Badania.md", "Experiment-Context-Pack-Teoretyczna.md",
+        "Orkiestrator-Log.md", "Plan-Strumieni.md",
+    ):
+        (topic / name).write_text("", encoding="utf-8")
+    (topic / "Karta-Badania.md").write_text(
+        "- Q-001 (wysoki): pytanie\n- Q-002 (zamkniete): ok\n- Zamknieto Q-003\n- Q-004 niezamkniete\n",
+        encoding="utf-8",
+    )
+    log_root.write_text("| Claim ID | x |\n", encoding="utf-8")
+    _, payload = _request(runner_server, "/v1/gate/pack", method="POST", body=_gate_payload())
+    assert payload["status"] == "Warning"
+    assert payload["markers"]["open_questions"] == ["Q-001", "Q-004"]
+    assert payload["markers"]["closed_questions"] == ["Q-002", "Q-003"]
+
+
+def test_gate_pack_ok_when_all_questions_closed(runner_server: str, log_root) -> None:
+    topic = log_root.parent
+    for name in (
+        "Karta-Badania.md", "Experiment-Context-Pack-Teoretyczna.md",
+        "Orkiestrator-Log.md", "Plan-Strumieni.md",
+    ):
+        (topic / name).write_text("Q-009 zamkniete\n", encoding="utf-8")
+    log_root.write_text("| Claim ID | x |\n", encoding="utf-8")
+    _, payload = _request(runner_server, "/v1/gate/pack", method="POST", body=_gate_payload())
+    assert payload["status"] == "OK"

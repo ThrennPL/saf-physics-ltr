@@ -129,6 +129,125 @@ def append_literature_log(log_path: Path, pubs: list[dict[str, str]]) -> dict[st
     return {"status": "OK", "added": len(new), "skipped": skipped, "file": log_path.name}
 
 
+SRC_MVP = "Artefakty-Wymagania.md (MVP)"
+SRC_FULL = "Artefakty-Wymagania.md (pelny zestaw)"
+SRC_G2 = "Artefakty-Wymagania.md (Gate 2) / Checklista-Research-Gate"
+SRC_OPS = "quality-gates / walidacja jezykowa PL (wymog procesu)"
+# Konfiguracja domenowa: nazwa artefaktu -> zrodlo wymagania.
+# Przypisanie Risk/Measurement Pack do Gate 2 to decyzja wlasciciela (Q-002 potwierdzone).
+GATE_ARTIFACT_SOURCES: dict[int, dict[str, str]] = {
+    1: {
+        "Karta-Badania.md": SRC_MVP,
+        "Experiment-Context-Pack-Teoretyczna.md": SRC_MVP,
+        "Orkiestrator-Log.md": SRC_MVP,
+        "Plan-Strumieni.md": SRC_MVP,
+    },
+    2: {
+        "Plan-Danych.md": SRC_G2,
+        "Plan-Walidacji.md": SRC_G2,
+        "Risk-and-Safety-Pack-Teoretyczna.md": SRC_FULL,
+        "Measurement-Integrity-Pack-Teoretyczna.md": SRC_FULL,
+    },
+    3: {
+        "Raport-Wyprowadzen-LTR.md": SRC_FULL,
+        "Rejestr-Walidacji-Formalnej-LTR.md": SRC_FULL,
+        "Cross-Reference-Log-LTR.md": SRC_FULL,
+        "Reproducibility-Pack-Teoretyczna.md": SRC_FULL,
+        "Checklista-Gate3-Teoria-LTR.md": SRC_FULL,
+    },
+    4: {
+        "Measurement-Integrity-Pack-Teoretyczna.md": SRC_FULL,
+        "Risk-and-Safety-Pack-Teoretyczna.md": SRC_FULL,
+        "Reproducibility-Pack-Teoretyczna.md": SRC_FULL,
+        "Raport-Wyprowadzen-LTR.md": SRC_FULL,
+        "Rejestr-Walidacji-Formalnej-LTR.md": SRC_FULL,
+        "Cross-Reference-Log-LTR.md": SRC_FULL,
+        "Raport-Wynikowy.md": SRC_FULL,
+        "Checklista-Gate3-Teoria-LTR.md": SRC_FULL,
+        "Checklista-Gate4-Auditability.md": SRC_FULL,
+        "Akceptacje-Decyzje.md": SRC_FULL,
+        "Walidacja-Jezykowa-PL.md": SRC_OPS,
+    },
+}
+GATE_REQUIRED_ARTIFACTS: dict[int, tuple[str, ...]] = {
+    gate: tuple(items) for gate, items in GATE_ARTIFACT_SOURCES.items()
+}
+MAX_DOC_BYTES = 2_000_000
+QUESTION_RE = re.compile(r"\bQ-\d{3}\b")
+CLOSED_RE = re.compile(r"(?<!nie)(?<!nie )zamkni", re.IGNORECASE)
+CLAIM_ROW_RE = re.compile(r"^\|\s*[A-Z0-9]+-CL-\d+\s*\|")
+
+
+def validate_gate_params(payload: Any) -> tuple[Path, int]:
+    if not isinstance(payload, dict) or set(payload) != {"topic", "gate"}:
+        raise ValueError("expected exactly: topic, gate")
+    topic, gate = payload["topic"], payload["gate"]
+    if not isinstance(topic, str) or not TOPIC_RE.fullmatch(topic):
+        raise ValueError("invalid topic")
+    if isinstance(gate, bool) or gate not in GATE_REQUIRED_ARTIFACTS:
+        raise ValueError("gate must be one of 1, 2, 3, 4")
+    base = (ROOT / "Badania").resolve()
+    folder = (base / topic).resolve()
+    if folder.parent != base or not folder.is_dir():
+        raise ValueError("unknown topic")
+    return folder, gate
+
+
+def build_gate_pack(folder: Path, gate: int) -> dict[str, Any]:
+    """Raport tylko do odczytu: kompletnosc artefaktow, zrodla i otwarte luki."""
+    required = GATE_REQUIRED_ARTIFACTS[gate]
+    missing = [name for name in required if not (folder / name).is_file()]
+    claim_status: dict[str, int] = {}
+    pending_preprints = 0
+    questions: set[str] = set()
+    closed: set[str] = set()
+    placeholders: list[dict[str, Any]] = []
+    for doc in sorted(folder.glob("*.md")):
+        if doc.stat().st_size > MAX_DOC_BYTES:
+            continue
+        text = doc.read_text(encoding="utf-8", errors="replace")
+        for line in text.splitlines():
+            ids = QUESTION_RE.findall(line)
+            if ids:
+                questions.update(ids)
+                if CLOSED_RE.search(line):
+                    closed.update(ids)
+        count = text.count("DO_UZUPELNIENIA")
+        if count:
+            placeholders.append({"file": doc.name, "count": count})
+        if doc.name == "Cross-Reference-Log-LTR.md":
+            for line in text.splitlines():
+                cells = [c.strip() for c in line.strip().strip("|").split("|")]
+                if CLAIM_ROW_RE.match(line):
+                    claim_status[cells[-1]] = claim_status.get(cells[-1], 0) + 1
+                elif line.startswith("|") and cells and cells[-1] == "do_weryfikacji":
+                    pending_preprints += 1
+    open_questions = sorted(questions - closed)
+    placeholders.sort(key=lambda item: (-item["count"], item["file"]))
+    status = "OK"
+    if missing:
+        status = "Blocker"
+    elif pending_preprints or placeholders or open_questions or any(k != "verified" for k in claim_status):
+        status = "Warning"
+    return {
+        "status": status,
+        "topic": folder.name,
+        "gate": gate,
+        "artifacts": {
+            "required": list(required),
+            "missing": missing,
+            "sources": GATE_ARTIFACT_SOURCES[gate],
+        },
+        "sources": {"claims_by_status": claim_status, "pending_preprints": pending_preprints},
+        "markers": {
+            "open_questions": open_questions,
+            "closed_questions": sorted(closed),
+            "placeholders_total": sum(item["count"] for item in placeholders),
+            "placeholders_top": placeholders[:10],
+        },
+    }
+
+
 def run_command(name: str, command: tuple[str, ...], timeout: int = 120) -> dict[str, Any]:
     started = time.monotonic()
     try:
@@ -229,12 +348,22 @@ def make_handler(token: str) -> type[BaseHTTPRequestHandler]:
                 self._send_json(400, {"error": "bad_content_length"})
                 return
             path = urlsplit(self.path).path
-            limit = MAX_LOG_REQUEST_BYTES if path == "/v1/literature/log" else MAX_REQUEST_BYTES
+            limit = (
+                MAX_LOG_REQUEST_BYTES if path == "/v1/literature/log" else MAX_REQUEST_BYTES
+            )
             if content_length > limit:
                 self._send_json(413, {"error": "request_too_large"})
                 return
             raw_body = self.rfile.read(content_length)
 
+            if path == "/v1/gate/pack":
+                try:
+                    folder, gate = validate_gate_params(json.loads(raw_body or b"null"))
+                except (ValueError, UnicodeDecodeError) as exc:
+                    self._send_json(400, {"error": "bad_request", "detail": str(exc)})
+                    return
+                self._send_json(200, build_gate_pack(folder, gate))
+                return
             if path == "/v1/literature/log":
                 try:
                     log_path, pubs = validate_log_params(json.loads(raw_body or b"null"))
