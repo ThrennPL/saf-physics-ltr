@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import http.client
 import json
+import re
 import threading
 import urllib.error
 import urllib.request
@@ -300,3 +301,44 @@ def test_gate_pack_ok_when_all_questions_closed(runner_server: str, log_root) ->
     log_root.write_text("| Claim ID | x |\n", encoding="utf-8")
     _, payload = _request(runner_server, "/v1/gate/pack", method="POST", body=_gate_payload())
     assert payload["status"] == "OK"
+
+
+def test_gate_pack_process_suite_is_informational(runner_server: str, log_root) -> None:
+    topic = log_root.parent
+    for name in (
+        "Karta-Badania.md", "Experiment-Context-Pack-Teoretyczna.md",
+        "Orkiestrator-Log.md", "Plan-Strumieni.md",
+    ):
+        (topic / name).write_text("Q-009 zamkniete\n", encoding="utf-8")
+    log_root.write_text("| Claim ID | x |\n", encoding="utf-8")
+    _, absent = _request(runner_server, "/v1/gate/pack", method="POST", body=_gate_payload())
+    assert absent["process_suite"] == {"file": "Raport-Process-Suite-T99.md", "present": False, "modified": None}
+    (topic / "Raport-Process-Suite-T99.md").write_text("# Raport\nFAIL\n", encoding="utf-8")
+    _, present = _request(runner_server, "/v1/gate/pack", method="POST", body=_gate_payload())
+    assert present["process_suite"]["present"] is True
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", present["process_suite"]["modified"])
+    assert present["status"] == absent["status"] == "OK"
+
+
+def test_run_command_decodes_utf8_output() -> None:
+    result = qa_runner_service.run_command(
+        "utf8", ("-c", "print('\\u00e3\\u4e2d')"), timeout=30
+    )
+    assert result["exit_code"] == 0
+    assert "\u00e3\u4e2d" in result["stdout"]
+
+
+def test_log_endpoint_records_approver(runner_server: str, log_root) -> None:
+    body = _log_payload(approved_by="Jan Kowalski | wlasciciel")
+    status, payload = _request(runner_server, "/v1/literature/log", method="POST", body=body)
+    assert status == 200 and payload["added"] == 1
+    assert "Wybor zatwierdzil: Jan Kowalski / wlasciciel." in log_root.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("approver", ["", "x", "a" * 81, 5, ["a"]])
+def test_log_endpoint_rejects_bad_approver(runner_server: str, log_root, approver: object) -> None:
+    before = log_root.read_text(encoding="utf-8")
+    body = _log_payload(approved_by=approver)
+    status, _ = _request(runner_server, "/v1/literature/log", method="POST", body=body)
+    assert status == 400
+    assert log_root.read_text(encoding="utf-8") == before

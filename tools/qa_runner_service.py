@@ -8,6 +8,7 @@ import re
 import subprocess
 import sys
 import time
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
@@ -66,8 +67,12 @@ def _clean_text(value: Any, field: str, limit: int) -> str:
 
 
 def validate_log_params(payload: Any) -> tuple[Path, list[dict[str, str]]]:
-    if not isinstance(payload, dict) or set(payload) != {"topic", "publications"}:
-        raise ValueError("expected exactly: topic, publications")
+    if not isinstance(payload, dict) or not {"topic", "publications"} <= set(payload) <= {
+        "topic",
+        "publications",
+        "approved_by",
+    }:
+        raise ValueError("expected: topic, publications, optional approved_by")
     topic = payload["topic"]
     if not isinstance(topic, str) or not TOPIC_RE.fullmatch(topic):
         raise ValueError("invalid topic")
@@ -101,7 +106,18 @@ def validate_log_params(payload: Any) -> tuple[Path, list[dict[str, str]]]:
     return log_path, cleaned
 
 
-def append_literature_log(log_path: Path, pubs: list[dict[str, str]]) -> dict[str, Any]:
+def validate_approved_by(payload: Any) -> str | None:
+    value = payload.get("approved_by") if isinstance(payload, dict) else None
+    if value is None:
+        return None
+    if not isinstance(value, str) or not 2 <= len(value.strip()) <= 80:
+        raise ValueError("invalid approved_by")
+    return _clean_text(value, "approved_by", 80)
+
+
+def append_literature_log(
+    log_path: Path, pubs: list[dict[str, str]], approved_by: str | None = None
+) -> dict[str, Any]:
     raw = log_path.read_bytes()
     existing = raw.decode("utf-8")
     new = [p for p in pubs if p["id"] not in existing]
@@ -114,6 +130,7 @@ def append_literature_log(log_path: Path, pubs: list[dict[str, str]]) -> dict[st
         "",
         f"## Kandydaci literatury z arXiv ({today}) - do weryfikacji",
         "- Zrodlo: arXiv (preprinty, brak recenzji); wybor dokonany przez uzytkownika w workflow n8n.",
+        f"- Wybor zatwierdzil: {approved_by}." if approved_by else "- Wybor zatwierdzil: formularz n8n (osoba nie podana).",
         "- To nie sa zweryfikowane claimy; wpis do tabeli claim -> source wymaga zgody wlasciciela badania.",
         "",
         "| ArXiv ID | Data | Autorzy | Tytul | URL | Typ zrodla | Status |",
@@ -193,6 +210,9 @@ def validate_gate_params(payload: Any) -> tuple[Path, int]:
     return folder, gate
 
 
+PROCESS_SUITE_REPORT = "Raport-Process-Suite-{topic}.md"
+
+
 def build_gate_pack(folder: Path, gate: int) -> dict[str, Any]:
     """Raport tylko do odczytu: kompletnosc artefaktow, zrodla i otwarte luki."""
     required = GATE_REQUIRED_ARTIFACTS[gate]
@@ -222,6 +242,10 @@ def build_gate_pack(folder: Path, gate: int) -> dict[str, Any]:
                     claim_status[cells[-1]] = claim_status.get(cells[-1], 0) + 1
                 elif line.startswith("|") and cells and cells[-1] == "do_weryfikacji":
                     pending_preprints += 1
+    suite_file = folder / PROCESS_SUITE_REPORT.format(topic=folder.name.split("-", 1)[0])
+    process_suite = {"file": suite_file.name, "present": suite_file.is_file(), "modified": None}
+    if process_suite["present"]:
+        process_suite["modified"] = datetime.fromtimestamp(suite_file.stat().st_mtime, timezone.utc).strftime("%Y-%m-%d")
     open_questions = sorted(questions - closed)
     placeholders.sort(key=lambda item: (-item["count"], item["file"]))
     status = "OK"
@@ -238,6 +262,7 @@ def build_gate_pack(folder: Path, gate: int) -> dict[str, Any]:
             "missing": missing,
             "sources": GATE_ARTIFACT_SOURCES[gate],
         },
+        "process_suite": process_suite,
         "sources": {"claims_by_status": claim_status, "pending_preprints": pending_preprints},
         "markers": {
             "open_questions": open_questions,
@@ -256,6 +281,9 @@ def run_command(name: str, command: tuple[str, ...], timeout: int = 120) -> dict
             cwd=ROOT,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
+            env={**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"},
             check=False,
             shell=False,
             timeout=timeout,
@@ -366,11 +394,13 @@ def make_handler(token: str) -> type[BaseHTTPRequestHandler]:
                 return
             if path == "/v1/literature/log":
                 try:
-                    log_path, pubs = validate_log_params(json.loads(raw_body or b"null"))
+                    log_payload = json.loads(raw_body or b"null")
+                    log_path, pubs = validate_log_params(log_payload)
+                    approved_by = validate_approved_by(log_payload)
                 except (ValueError, UnicodeDecodeError) as exc:
                     self._send_json(400, {"error": "bad_request", "detail": str(exc)})
                     return
-                self._send_json(200, append_literature_log(log_path, pubs))
+                self._send_json(200, append_literature_log(log_path, pubs, approved_by))
                 return
             if path == "/v1/literature/arxiv":
                 try:

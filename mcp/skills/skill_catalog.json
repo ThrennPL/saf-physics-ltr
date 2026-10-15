@@ -112,11 +112,15 @@
       },
       "tool_contracts": [
         "Tool.ArxivSearch",
-        "Tool.AdsSearch"
+        "Tool.AdsSearch",
+        "Tool.N8nArxivSearch",
+        "Tool.N8nArxivLog"
       ],
       "tool_implementations": [
         "tools/arxiv_search.py",
-        "tools/ads_search.py"
+        "tools/ads_search.py",
+        "search_arxiv_literature",
+        "log_arxiv_candidates"
       ],
       "instructions": [
         "Dokumentacja/Instructions/literature.instructions.md"
@@ -231,11 +235,13 @@
       },
       "tool_contracts": [
         "Tool.EvidencePacket",
-        "Tool.ReviewTraceability"
+        "Tool.ReviewTraceability",
+        "Tool.N8nGatePack"
       ],
       "tool_implementations": [
         "tools/build_evidence_packet.py",
-        "tools/review_traceability_generator.py"
+        "tools/review_traceability_generator.py",
+        "generate_gate_pack"
       ],
       "instructions": [
         "Dokumentacja/Instructions/reporting.instructions.md"
@@ -444,11 +450,13 @@
       },
       "tool_contracts": [
         "Tool.N8nSync",
-        "Tool.QaRunnerService"
+        "Tool.QaRunnerService",
+        "Tool.N8nRepoQa"
       ],
       "tool_implementations": [
         "tools/n8n_sync.py",
-        "tools/qa_runner_service.py"
+        "tools/qa_runner_service.py",
+        "run_repo_qa"
       ],
       "instructions": [
         "Dokumentacja/Instructions/tool-contracts.instructions.md"

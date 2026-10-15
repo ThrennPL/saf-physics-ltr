@@ -14,26 +14,80 @@
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
+        "path": "/healthz",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        -144
+      ],
+      "id": "74993bd0-c2a2-44d6-b69f-9d99ef322aa7",
+      "name": "Webhook",
+      "webhookId": "9da36efb-620d-49c1-b276-ea4129fb0d70"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.first().json;\n\n// Obsługa wejścia z Webhooka (body) lub Formularza (body/pola)\n\nreturn [{\n  json: {\n    // flaga skąd przyszło wywołanie (przydatna na końcu)\n    source: inputData.headers ? \"api\" : \"form\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        -64
+      ],
+      "id": "501c27e9-2100-42b4-bbf8-57a306449947",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
             {
-              "id": "90d3280a-182c-4d54-b72d-225c4ec2f9e5",
-              "name": "status",
-              "value": "OK",
-              "type": "string"
+              "id": "e9475026-46d6-4820-bf20-057a3739430c",
+              "leftValue": "={{ $json.source }}",
+              "rightValue": "api",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
             }
-          ]
+          ],
+          "combinator": "and"
         },
         "options": {}
       },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.5,
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
       "position": [
-        224,
-        0
+        464,
+        -64
       ],
-      "id": "119893e2-e6c5-476f-91e7-ca4f28e1a131",
-      "name": "Edit Fields"
+      "id": "d9441cbd-9b04-4b41-a0da-975d1b2ee791",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Żyje",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        688,
+        -160
+      ],
+      "id": "a2207d1f-b845-411f-8433-2c5159de79c3",
+      "name": "Respond to Webhook"
     }
   ],
   "connections": {
@@ -41,11 +95,50 @@
       "main": [
         [
           {
-            "node": "Edit Fields",
+            "node": "Code in JavaScript",
             "type": "main",
             "index": 0
           }
         ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
       ]
     }
   },

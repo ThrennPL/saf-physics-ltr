@@ -71,5 +71,33 @@
       "agent_name": "socratic-mentor",
       "skill_ids": ["SK-002"]
     }
-  ]
+  ],
+  "research-orkiestrator": {
+    "tools": [
+      "generate_gate_pack",
+      "route_model"
+    ]
+  },
+  "technical-developer": {
+    "tools": [
+      "repo-qa-raport"
+    ]
+  },
+  "artifact-quality": {
+    "tools": [
+      "repo-qa-raport"
+    ]
+  },
+  "cross-reference": {
+    "tools": [
+      "repo-arxiv-przeglad",
+      "log_arxiv_candidates"
+    ]
+  },
+  "physics-discovery": {
+    "tools": [
+      "repo-arxiv-przeglad",
+      "log_arxiv_candidates"
+    ]
+  }
 }

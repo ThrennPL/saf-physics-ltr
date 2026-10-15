@@ -168,6 +168,119 @@ Polecenie zakonczy sie bledem, gdy sa ostrzezenia:
 python tools/lint_ltr.py --fail-on-warning
 ```
 
+## Lokalny runner QA dla n8n
+
+Runner z allowlista udostepnia tylko `lint_ltr`, `taxonomy_guard` i testy pytest
+repozytorium oraz endpointy tylko do odczytu/dopisywania opisane nizej. Nie przyjmuje
+polecen powloki, sciezek plikow ani argumentow skryptow z HTTP. Repozytorium zostaje
+poza kontenerem n8n; ustaw losowy `QA_RUNNER_TOKEN` (min. 32 znaki). Nasluchuj na
+`0.0.0.0` tylko, gdy Docker musi dotrzec do uslugi na hoscie, i ogranicz dostep do
+portu 8765 zaporą hosta.
+
+```powershell
+$env:QA_RUNNER_TOKEN = "<losowy token, min. 32 znaki>"
+python tools/qa_runner_service.py --host 0.0.0.0 --port 8765
+```
+
+W n8n utworz credential Header Auth (nazwa naglowka `Authorization`, wartosc:
+`Bearer <ten sam token>`). Adres runnera z kontenera: `http://host.docker.internal:8765`.
+Endpointy: `GET /v1/checks`, `POST /v1/checks/{lint_ltr|taxonomy_guard|pytest}`,
+`POST /v1/literature/arxiv` (wyszukiwanie), `POST /v1/literature/log` (dopisanie
+kandydatow do logu), `POST /v1/gate/pack` (raport tylko do odczytu). Limit czasu
+kontroli to 120 s, wyjscie jest obcinane. Usluge trzymaj lokalnie i zatrzymaj po uzyciu.
+
+### Synchronizacja workflow n8n przez Public API
+
+Klucz API utworz w n8n (Settings -> n8n API) i przechowuj poza repozytorium, np. jako
+zmienna uzytkownika (`N8N_LOCAL_API_KEY_TMD`) lub w `.env`. Nigdy nie wklejaj go do
+czatow ani do commitow.
+
+```powershell
+python tools/n8n_sync.py list
+python tools/n8n_sync.py pull Ku19rXEPiP6PkDWu n8n/repo-qa-raport-workflow.json
+python tools/n8n_sync.py push Ku19rXEPiP6PkDWu n8n/repo-qa-raport-workflow.json
+python tools/n8n_sync.py check   # tylko odczyt: porownanie n8n z n8n/*.json (nodes, connections); kod 1 = rozbieznosc
+```
+
+`tools/n8n_sync.py` odmawia zapisu lub wyslania plikow wygladajacych na zawierajace
+sekrety. Public API nie obsluguje folderow: po utworzeniu workflow przenies go do
+folderu `TheoreticalMD` w UI n8n (karta workflow -> Move). Credentiale (Header Auth z
+tokenem runnera) tworzy sie tylko w UI. Do `n8n/*.json` trafiaja wylacznie workflow
+z zakresu repo; pozostale (np. YouTube/RSS, Telegram) zostaja poza repo, a `check`
+zglasza je jako WARNING.
+
+### Workflow w repo (`n8n/`)
+
+- **Repo QA - raport (reczny)** (`repo-qa-raport-workflow.json`, ID `Ku19rXEPiP6PkDWu`):
+  uruchamia trzy kontrole; status inny niz `OK` dopisuje wpis do `qa-alerts.log`
+  w katalogu plikow n8n (`/data` w kontenerze) i zapisuje raport PL w
+  `reports/qa-<znacznik>.md` (`D:\n8n-files\reports`). Bez harmonogramu i publikacji.
+- **Przeglad literatury arXiv (reczny)** (`repo-arxiv-przeglad-workflow.json`,
+  ID `lS7H9QuTFx6hXuJm`): formularz ze slowami kluczowymi (jedna fraza w linii, max 5),
+  kategoriami arXiv i limitem wynikow na fraze; wywoluje `POST /v1/literature/arxiv`
+  i zapisuje raport w `reports/arxiv-<znacznik>.md`. Wyniki to preprinty. Drugi
+  ekran ("Wybor publikacji") pokazuje unikalne wyniki jako pola wyboru oraz temat
+  badania (folder w `Badania/`, np. `T04-GR-PPN-Yukawa-Perihelion`); wybor trafia do
+  `reports/arxiv-wybor-<znacznik>.json` (status `do_weryfikacji`), a przy poprawnym
+  temacie i 1-20 pozycjach wywolywany jest `POST /v1/literature/log`, ktory tylko
+  dopisuje sekcje "Kandydaci literatury z arXiv" do
+  `Badania/<temat>/Cross-Reference-Log-LTR.md`: nie zmienia istniejacego tekstu, pomija
+  ID juz obecne i nie dotyka tabeli claim -> source. Formularz testowy uruchamiaj raz
+  na "Execute workflow" i uzywaj jednej karty przegladarki.
+- **Repo - paczka przed gate (reczny)** (`repo-gate-paczka-workflow.json`,
+  ID `FwgFTYrcMBI8tuQR`): formularz z tematem i numerem gate (1-4). Endpoint
+  `POST /v1/gate/pack` (tylko odczyt) raportuje obecne/brakujace artefakty, status logu
+  literatury, liczbe `DO_UZUPELNIENIA` oraz otwarte i zamkniete `Q-XXX` (pytanie
+  uznajemy za zamkniete, gdy linia z jego ID zawiera "zamkniete"/"zamknieto"; tylko
+  otwarte daja Warning). Workflow dodaje kontrole lint_ltr, taxonomy_guard i pytest
+  i zapisuje raport PL `reports/gate<N>-<temat>-<znacznik>.md` (status
+  OK/Warning/Blocker, pewnosc 0-1). Raport nigdy nie rekomenduje zatwierdzenia gate;
+  dla Gate 3 tylko przypomina regule agent-conditional pass. Wymagane artefakty dla
+  gate pochodza z `Dokumentacja/Artefakty-Wymagania.md` (konfiguracja domenowa
+  `GATE_ARTIFACT_SOURCES`, kazda pozycja ma zrodlo). Sprawdzana jest tylko obecnosc
+  plikow; kryteria z `Checklista-Research-Gate` sa wypisane do oceny przez czlowieka,
+  a kazdy Warning/Blocker ma kolumny owner/ETA (DO_UZUPELNIENIA). Raport podaje tez, czy
+  istnieje `Raport-Process-Suite-<Txx>.md` i jaka jest data pliku (tylko informacyjnie:
+  nie zmienia statusu, a jego wyniki nie sa interpretowane).
+- **Repo - dopisanie kandydatow arXiv do logu (API)**
+  (`repo-arxiv-log-kandydatow-workflow.json`, ID `RdcYApAjxCWV5eF8`): webhook dla agentow
+  (narzedzie `log_arxiv_candidates`).
+- **n8n - Testowy workflow** (`n8n-testowy-workflow.json`): przyklad i test lacznosci
+  (webhook `/healthz`).
+
+### Webhooki narzedzi agentowych
+
+Narzedzia sa zadeklarowane w `mcp/tools/tool_contract_index.json` (sekcja `tools`);
+workflow musi byc aktywny, a runner uruchomiony z `QA_RUNNER_TOKEN`:
+
+| Narzedzie | Webhook (POST, JSON) | Eksport workflow |
+|---|---|---|
+| `run_repo_qa` | `/webhook/v1/qa/run` | `n8n/repo-qa-raport-workflow.json` |
+| `generate_gate_pack` | `/webhook/v1/gate/pack-run` | `n8n/repo-gate-paczka-workflow.json` |
+| `search_arxiv_literature` | `/webhook/v1/literature/arxiv-search` | `n8n/repo-arxiv-przeglad-workflow.json` |
+| `log_arxiv_candidates` | `/webhook/v1/literature/log-candidates` | `n8n/repo-arxiv-log-kandydatow-workflow.json` |
+
+Bledne dane wejsciowe daja HTTP 400 z `{"status":"Blocker","error":...,"detail":...}`.
+`search_arxiv_literature` tylko zwraca kandydatow (`pubs`); wybor nalezy do czlowieka.
+`log_arxiv_candidates` dopisuje wybrane pozycje (pelne obiekty z `pubs`) do
+`Cross-Reference-Log-LTR.md` danego badania; wymagany jest `approved_by` (osoba, ktora
+dokonala wyboru), zapisywany w logu. Duplikaty sa pomijane (status Warning), istniejacy
+tekst nigdy nie jest zmieniany.
+
+### Docker, tunel i odtwarzanie srodowiska
+
+- Kontener n8n uzywa lokalnego obrazu `n8n-tmd:local`
+  (`docker build -t n8n-tmd:local n8n/docker`; dodaje `youtube-transcript`, uruchamiany
+  z `NODE_FUNCTION_ALLOW_EXTERNAL=youtube-transcript`).
+- `n8n start --tunnel` nie jest dostepne w aktualnym n8n. Dla Telegram Trigger uzyj
+  kontenera Cloudflare Quick Tunnel (`cloudflare/cloudflared`) i ustaw na kontenerze n8n
+  `WEBHOOK_URL` na adres tunelu oraz `N8N_PROXY_HOPS=1`. Adres Quick Tunnel zmienia sie
+  po restarcie; zatrzymaj tunel, gdy nie jest potrzebny.
+- Odtworzenie n8n od zera: utworz credential Header Auth (token runnera) w UI, potem
+  `python tools/n8n_sync.py restore n8n` tworzy brakujace workflow z `n8n/*.json`
+  (nowe ID; w razie potrzeby ponownie wybierz credential w wezlach HTTP), a na koniec
+  przenies je do `TheoreticalMD`. Adres formularza testowego uzywa ID webhooka
+  (`/form-test/<webhookId>`), nie wartosci `path`.
 
 ## ArXiv (Cross-Reference)
 Proste wyszukiwanie ArXiv i wynik w tabeli Markdown:

@@ -7,6 +7,7 @@ Przyklady:
   python tools/n8n_sync.py push Ku19rXEPiP6PkDWu n8n/repo-qa-raport-workflow.json
   python tools/n8n_sync.py create n8n/<plik>.json   (nowy workflow z pliku)
   python tools/n8n_sync.py restore [n8n]            (odtworz brakujace workflow z katalogu)
+  python tools/n8n_sync.py check [n8n]              (porownaj n8n z plikami; kod 1 = rozbieznosc)
 Folder w n8n (TheoreticalMD) ustawia sie w UI - Public API go nie obsluguje.
 """
 from __future__ import annotations
@@ -83,6 +84,11 @@ def has_secret(text: str) -> bool:
     return bool(SECRET_RE.search(text))
 
 
+def safe_print(line: str) -> None:
+    enc = sys.stdout.encoding or "utf-8"
+    print(line.encode(enc, "replace").decode(enc))
+
+
 def cmd_list(_: argparse.Namespace) -> int:
     for item in request("GET", "/workflows?limit=250").get("data", []):
         line = f"{item['id']} | {item['name']} | active={item.get('active')}"
@@ -134,6 +140,40 @@ def cmd_restore(args: argparse.Namespace) -> int:
     return 0
 
 
+COMPARE_FIELDS = ("nodes", "connections")
+
+
+def compare_workflows(local: dict, remote: dict) -> list[str]:
+    return [field for field in COMPARE_FIELDS if local.get(field) != remote.get(field)]
+
+
+def cmd_check(args: argparse.Namespace) -> int:
+    """Porownuje workflow w n8n z plikami w repo (tylko odczyt). Kod 1 = rozbieznosc."""
+    remote = {}
+    for item in request("GET", "/workflows?limit=250").get("data", []):
+        remote[item["name"]] = item["id"]
+    problems = 0
+    seen = set()
+    for path in sorted(Path(args.directory).glob("*.json")):
+        local = json.loads(path.read_text(encoding="utf-8"))
+        name = local.get("name")
+        seen.add(name)
+        if name not in remote:
+            safe_print(f"BLOCKER brak w n8n: {name} ({path.name})")
+            problems += 1
+            continue
+        diff = compare_workflows(local, request("GET", f"/workflows/{check_id(remote[name])}"))
+        if diff:
+            safe_print(f"BLOCKER rozbiezne ({', '.join(diff)}): {name} [{remote[name]}] <-> {path.name}")
+            problems += 1
+        else:
+            safe_print(f"OK zgodne: {name} [{remote[name]}]")
+    for name in sorted(set(remote) - seen):
+        safe_print(f"WARNING brak pliku w repo: {name} [{remote[name]}]")
+    safe_print(f"Podsumowanie: rozbieznosci={problems}")
+    return 1 if problems else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -144,6 +184,9 @@ def build_parser() -> argparse.ArgumentParser:
     restore = sub.add_parser("restore")
     restore.add_argument("directory", nargs="?", default="n8n")
     restore.set_defaults(func=cmd_restore)
+    check = sub.add_parser("check")
+    check.add_argument("directory", nargs="?", default="n8n")
+    check.set_defaults(func=cmd_check)
     for name, func in (("pull", cmd_pull), ("push", cmd_push)):
         p = sub.add_parser(name)
         p.add_argument("workflow_id")

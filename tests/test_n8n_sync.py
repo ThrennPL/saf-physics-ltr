@@ -53,3 +53,26 @@ def test_restore_creates_only_missing(tmp_path, monkeypatch):
     monkeypatch.setattr(n8n_sync, "request", fake_request)
     assert n8n_sync.main(["restore", str(tmp_path)]) == 0
     assert [c for c in calls if c[0] == "POST"] == [("POST", "/workflows")]
+
+
+def test_compare_workflows_detects_differences():
+    same = {"nodes": [{"name": "A"}], "connections": {}}
+    assert n8n_sync.compare_workflows(same, dict(same, name="x")) == []
+    assert n8n_sync.compare_workflows(same, {"nodes": [], "connections": {}}) == ["nodes"]
+
+
+def test_check_reports_mismatch_and_missing(tmp_path, monkeypatch, capsys):
+    (tmp_path / "a.json").write_text('{"name":"A","nodes":[],"connections":{}}', encoding="utf-8")
+    (tmp_path / "b.json").write_text('{"name":"B","nodes":[],"connections":{}}', encoding="utf-8")
+    remote = {"A": {"nodes": [{"name": "x"}], "connections": {}}}
+
+    def fake(method, path, payload=None):
+        if path.startswith("/workflows?"):
+            return {"data": [{"id": "id1", "name": "A"}, {"id": "id2", "name": "Zlaczony"}]}
+        return remote["A"]
+
+    monkeypatch.setattr(n8n_sync, "request", fake)
+    args = n8n_sync.build_parser().parse_args(["check", str(tmp_path)])
+    assert args.func(args) == 1
+    out = capsys.readouterr().out
+    assert "rozbiezne" in out and "brak w n8n: B" in out and "brak pliku w repo: Zlaczony" in out

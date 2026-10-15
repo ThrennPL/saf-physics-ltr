@@ -29,5 +29,193 @@
     {"tool_contract": "Tool.ManuscriptSplitter", "implementation": "tools/manuscript_supplement_splitter.py", "criticality": "low"},
     {"tool_contract": "Tool.N8nSync", "implementation": "tools/n8n_sync.py", "criticality": "high"},
     {"tool_contract": "Tool.QaRunnerService", "implementation": "tools/qa_runner_service.py", "criticality": "high"}
+  ],
+  "tools": [
+    {
+      "id": "generate_gate_pack",
+      "name": "Generowanie Paczki Gate",
+      "description": "Uruchamia proces weryfikacji i generowania raportu paczki artefaktow przed Quality Gate (kontrole lint_ltr, taxonomy_guard, pytest). Zwraca status zbiorczy roboczy (OK/Warning/Blocker) oraz sciezke do raportu MD.",
+      "owner": "Technical Developer",
+      "endpoint": {
+        "type": "n8n_webhook",
+        "url": "http://localhost:5678/webhook/v1/gate/pack-run",
+        "method": "POST"
+      },
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "topic": {
+            "type": "string",
+            "description": "Identyfikator tematu badania, np. T04-GR-PPN-Yukawa-Perihelion"
+          },
+          "gate": {
+            "type": "integer",
+            "enum": [1, 2, 3, 4],
+            "description": "Numer bramki jakosci (1-4)"
+          }
+        },
+        "required": ["topic", "gate"]
+      },
+      "returns": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["OK", "Warning", "Blocker"]
+          },
+          "confidence": {
+            "type": "number"
+          },
+          "report_file": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "id": "run_repo_qa",
+      "name": "Uruchomienie Raportu QA Repozytorium",
+      "description": "Wykonuje kontrole jakosci repozytorium (lint_ltr, taxonomy_guard, pytest) przez n8n, agreguje wyniki i generuje raport Markdown.",
+      "owner": "Technical Developer",
+      "endpoint": {
+        "type": "n8n_webhook",
+        "url": "http://localhost:5678/webhook/v1/qa/run",
+        "method": "POST"
+      },
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      },
+      "returns": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["OK", "Warning", "Blocker"]
+          },
+          "summary": {
+            "type": "string"
+          },
+          "report_file": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "id": "search_arxiv_literature",
+      "name": "Wyszukiwanie Literatury arXiv",
+      "description": "Wyszukuje publikacje w serwisie arXiv dla podanych fraz i kategorii, deduplikuje wpisy i generuje raport przegladu.",
+      "owner": "Cross-Reference",
+      "endpoint": {
+        "type": "n8n_webhook",
+        "url": "http://localhost:5678/webhook/v1/literature/arxiv-search",
+        "method": "POST"
+      },
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "phrases": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Lista fraz do wyszukania (maksymalnie 5)"
+          },
+          "categories": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Lista kategorii arXiv, np. ['gr-qc', 'hep-th']"
+          },
+          "max": {
+            "type": "integer",
+            "description": "Maksymalna liczba wynikow na fraze (1-20)"
+          }
+        },
+        "required": ["phrases"]
+      },
+      "returns": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["OK", "Warning", "Blocker"]
+          },
+          "unique": {
+            "type": "integer"
+          },
+          "report_file": {
+            "type": "string"
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "pubs": {
+            "type": "array",
+            "items": { "type": "object" },
+            "description": "Kandydaci (id, title, authors, date, url); wybor nalezy do czlowieka"
+          }
+        }
+      }
+    },
+    {
+      "id": "log_arxiv_candidates",
+      "name": "Dopisanie Kandydatow arXiv do Logu Badania",
+      "description": "Dopisuje wybrane przez czlowieka publikacje (preprinty, status do_weryfikacji) do Cross-Reference-Log-LTR.md wskazanego badania. Tylko dopisuje sekcje, pomija duplikaty, nie zmienia istniejacego tekstu ani tabeli claim -> source. Wywoluj dopiero po wyborze czlowieka; approved_by zapisuje sie w logu jako slad decyzji.",
+      "owner": "Cross-Reference",
+      "endpoint": {
+        "type": "n8n_webhook",
+        "url": "http://localhost:5678/webhook/v1/literature/log-candidates",
+        "method": "POST"
+      },
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "topic": {
+            "type": "string",
+            "description": "Folder badania w Badania/, np. T04-GR-PPN-Yukawa-Perihelion"
+          },
+          "selected": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "title": { "type": "string" },
+                "authors": { "type": "string" },
+                "date": { "type": "string" },
+                "url": { "type": "string" }
+              },
+              "required": ["id", "title", "authors", "date", "url"]
+            },
+            "description": "Pozycje wybrane przez czlowieka, w formacie z pola pubs wyniku search_arxiv_literature"
+          },
+          "approved_by": {
+            "type": "string",
+            "description": "Kto zatwierdzil wybor (czlowiek); wymagane"
+          }
+        },
+        "required": ["topic", "selected", "approved_by"]
+      },
+      "returns": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["OK", "Warning", "Blocker"]
+          },
+          "added": {
+            "type": "integer"
+          },
+          "skipped": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "file": {
+            "type": "string"
+          }
+        }
+      }
+    }
   ]
 }

@@ -188,3 +188,32 @@ def test_validate_agent_skill_binding_unknown_skill(tmp_path: Path) -> None:
 
     errors = validate_agent_skill_binding(binding_file, tmp_path)
     assert any("unknown id" in err for err in errors)
+
+def _n8n_skill_repo(tmp_path: Path, declared: bool) -> Path:
+    (tmp_path / "mcp" / "tools").mkdir(parents=True)
+    (tmp_path / "instr.md").write_text("x", encoding="utf-8")
+    tools = [{"id": "gen_pack", "endpoint": {"type": "n8n_webhook"}}] if declared else []
+    (tmp_path / "mcp" / "tools" / "tool_contract_index.json").write_text(
+        json.dumps({"version": "1", "contracts": [], "tools": tools}), encoding="utf-8"
+    )
+    block = {"required_fields": ["x"]}
+    skill = {
+        "skill_id": "SK-X", "name": "n", "owner": "o", "status": "active",
+        "input": block, "output": block, "error": block,
+        "tool_contracts": ["Tool.X"], "tool_implementations": ["gen_pack"],
+        "instructions": ["instr.md"],
+    }
+    path = tmp_path / "catalog.json"
+    path.write_text(json.dumps({"version": "1", "skills": [skill]}), encoding="utf-8")
+    return path
+
+
+def test_skill_catalog_accepts_declared_n8n_tool_id(tmp_path: Path) -> None:
+    path = _n8n_skill_repo(tmp_path, declared=True)
+    assert validate_skill_catalog(path, tmp_path) == []
+
+
+def test_skill_catalog_rejects_undeclared_tool_id(tmp_path: Path) -> None:
+    path = _n8n_skill_repo(tmp_path, declared=False)
+    errors = validate_skill_catalog(path, tmp_path)
+    assert any("missing file: gen_pack" in e for e in errors)

@@ -143,12 +143,16 @@ python tools/qa_runner_service.py --host 0.0.0.0 --port 8765
 ```
 
 In n8n, create a Header Auth credential with header name `Authorization` and value
-`Bearer <the same token>`. Use `http://host.docker.internal:8765/v1/checks` for
+`Bearer <same token>`. Use `http://host.docker.internal:8765/v1/checks` for
 the check list or `POST http://host.docker.internal:8765/v1/checks/lint_ltr`,
 `POST http://host.docker.internal:8765/v1/checks/taxonomy_guard`, and
 `POST http://host.docker.internal:8765/v1/checks/pytest` to run checks.
 The runner uses the current repository root, times out after 120 seconds, and caps
 captured output. Keep the service local and stop it after use.
+
+Other endpoints (all validated, no shell access): `POST /v1/literature/arxiv` (search),
+`POST /v1/literature/log` (append candidates to a research log, optional `approved_by`)
+and `POST /v1/gate/pack` (read-only pre-gate report).
 
 ### n8n workflow sync via Public API
 
@@ -174,6 +178,7 @@ to write or push files that look like they contain secrets):
 python tools/n8n_sync.py list
 python tools/n8n_sync.py pull Ku19rXEPiP6PkDWu n8n/repo-qa-raport-workflow.json
 python tools/n8n_sync.py push Ku19rXEPiP6PkDWu n8n/repo-qa-raport-workflow.json
+python tools/n8n_sync.py check   # read-only: compare n8n with n8n/*.json (nodes, connections); exit 1 on mismatch
 ```
 
 The public API does not manage folders: after creating a workflow, move it to the
@@ -208,6 +213,32 @@ agent-conditional pass rule. Required artifacts per gate come from
 item lists its source). Only file presence is checked; scenario criteria from
 `Checklista-Research-Gate` are listed for human assessment, and each Warning/Blocker has
 owner/ETA columns (DO_UZUPELNIENIA).
+The report also notes whether `Raport-Process-Suite-<Txx>.md` exists and its file date (informational only; it does not change the status and its results are not interpreted).
+
+Agent tool webhooks (declared in `mcp/tools/tool_contract_index.json`, section `tools`;
+the workflow must be active, the runner must be running with `QA_RUNNER_TOKEN`):
+
+| Tool id | Webhook (POST, JSON) | Workflow export |
+|---|---|---|
+| `run_repo_qa` | `/webhook/v1/qa/run` | `n8n/repo-qa-raport-workflow.json` |
+| `generate_gate_pack` | `/webhook/v1/gate/pack-run` | `n8n/repo-gate-paczka-workflow.json` |
+| `search_arxiv_literature` | `/webhook/v1/literature/arxiv-search` | `n8n/repo-arxiv-przeglad-workflow.json` |
+| `log_arxiv_candidates` | `/webhook/v1/literature/log-candidates` | `n8n/repo-arxiv-log-kandydatow-workflow.json` |
+
+Invalid input returns HTTP 400 with `{"status":"Blocker","error":...,"detail":...}`.
+`search_arxiv_literature` only returns candidates (`pubs`); the choice belongs to a human.
+`log_arxiv_candidates` appends the selected items (full objects from `pubs`) to the
+topic's `Cross-Reference-Log-LTR.md`; `approved_by` (the person who chose) is required and
+recorded in the log. Duplicates are skipped (status Warning), existing text is never edited.
+
+Docker notes: the container uses the local image `n8n-tmd:local`
+(`docker build -t n8n-tmd:local n8n/docker`, adds `youtube-transcript`; run with
+`NODE_FUNCTION_ALLOW_EXTERNAL=youtube-transcript`). `n8n start --tunnel` is not available
+in current n8n; for Telegram Trigger use a Cloudflare Quick Tunnel container
+(`cloudflare/cloudflared`) and set `WEBHOOK_URL` to the tunnel URL plus `N8N_PROXY_HOPS=1`
+on the n8n container. Quick Tunnel URLs change on restart; stop the tunnel after use.
+
+The export `n8n/n8n-testowy-workflow.json` is a connectivity example (webhook `/healthz`).
 
 Rebuilding n8n from scratch: create the Header Auth credential (runner token) in the UI,
 then `python tools/n8n_sync.py restore n8n` creates all missing workflows from `n8n/*.json`

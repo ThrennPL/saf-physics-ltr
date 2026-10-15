@@ -14,20 +14,17 @@
       "parameters": {
         "formTitle": "Przeglad literatury arXiv",
         "formDescription": "Podaj frazy (jedna w linii, maks. 5), kategorie arXiv oddzielone przecinkami i liczbe wynikow na fraze.",
-        "path": "repo-arxiv-przeglad",
-        "responseMode": "onReceived",
         "formFields": {
           "values": [
             {
               "fieldLabel": "Frazy",
               "fieldType": "textarea",
-              "requiredField": true,
               "placeholder": "np. Yukawa perihelion precession",
-              "defaultValue": "Yukawa perihelion precession\nYukawa post-Newtonian gravity solar system constraints"
+              "defaultValue": "Yukawa perihelion precession\nYukawa post-Newtonian gravity solar system constraints",
+              "requiredField": true
             },
             {
               "fieldLabel": "Kategorie",
-              "fieldType": "text",
               "placeholder": "gr-qc, hep-th",
               "defaultValue": "gr-qc"
             },
@@ -38,9 +35,7 @@
             }
           ]
         },
-        "options": {
-          "respondWhen": "responseNode"
-        }
+        "options": {}
       }
     },
     {
@@ -53,7 +48,7 @@
         0
       ],
       "parameters": {
-        "jsCode": "const f = $input.first().json;\nconst phrases = String(f[\"Frazy\"] || \"\").split(/\\r?\\n/).map(s => s.trim()).filter(Boolean).slice(0, 5);\nconst categories = String(f[\"Kategorie\"] || \"\").split(/[,\\s]+/).map(s => s.trim()).filter(Boolean).slice(0, 5);\nconst max = Math.min(20, Math.max(1, parseInt(f[\"Max wynikow na fraze\"], 10) || 5));\nif (!phrases.length) { throw new Error(\"Brak fraz wyszukiwania (pole Frazy).\"); }\nreturn phrases.map(query => ({ json: { query, categories, max } }));"
+        "jsCode": "const f = $input.first().json.body || $input.first().json;\nlet phrases = [];\nif (Array.isArray(f.phrases)) {\n  phrases = f.phrases;\n} else {\n  phrases = String(f.phrases || f[\"Frazy\"] || \"\").split(/\\r?\\n/).map(s => s.trim()).filter(Boolean);\n}\nphrases = phrases.slice(0, 5);\n\nlet categories = [];\nif (Array.isArray(f.categories)) {\n  categories = f.categories;\n} else {\n  categories = String(f.categories || f[\"Kategorie\"] || \"\").split(/[,\\s]+/).map(s => s.trim()).filter(Boolean);\n}\ncategories = categories.slice(0, 5);\n\nconst max = Math.min(20, Math.max(1, parseInt(f.max || f[\"Max wynikow na fraze\"], 10) || 5));\nif (!phrases.length) {\n  return [{ json: { valid: false, error: \"bad_request\", detail: \"Brak fraz wyszukiwania (phrases).\" } }];\n}\n\nreturn phrases.map(query => ({ json: { query, categories, max, valid: true, isApi: Boolean($input.first().json.headers) } }));"
       }
     },
     {
@@ -110,7 +105,6 @@
       "parameters": {
         "operation": "write",
         "fileName": "=/data/reports/{{$json.fname}}",
-        "dataPropertyName": "data",
         "options": {}
       }
     },
@@ -121,14 +115,12 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 2.5,
       "position": [
-        1120,
+        1680,
         0
       ],
       "parameters": {
         "defineForm": "json",
         "jsonOutput": "={{ $json.fields }}",
-        "formTitle": "Wybor publikacji",
-        "formDescription": "Zaznacz publikacje istotne dla badania. Zrodlo: arXiv (preprinty, bez recenzji).",
         "options": {}
       }
     },
@@ -138,7 +130,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1344,
+        1904,
         0
       ],
       "parameters": {
@@ -151,13 +143,12 @@
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1.1,
       "position": [
-        1568,
+        2128,
         0
       ],
       "parameters": {
         "operation": "write",
         "fileName": "=/data/reports/{{$json.fname}}",
-        "dataPropertyName": "data",
         "options": {}
       }
     },
@@ -168,7 +159,7 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 2.5,
       "position": [
-        2240,
+        2800,
         0
       ],
       "parameters": {
@@ -184,8 +175,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1008,
-        -160
+        1392,
+        208
       ],
       "parameters": {
         "jsCode": "const pubs = $(\"Raport literatury\").first().json.pubs;\nconst fields = [\n  { fieldLabel: \"Publikacje\", fieldType: \"checkbox\", fieldOptions: { values: pubs.map(p => ({ option: p.id + \" | \" + p.title.slice(0, 110) + \" | \" + p.date.slice(0, 4) })) } },\n  { fieldLabel: \"Temat badania\", fieldType: \"text\", placeholder: \"np. T04-GR-PPN-Yukawa-Perihelion\" }\n];\nreturn [{ json: { fields: JSON.stringify(fields) } }];"
@@ -197,7 +188,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1792,
+        2352,
         0
       ],
       "parameters": {
@@ -205,7 +196,8 @@
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict"
+            "typeValidation": "strict",
+            "version": 1
           },
           "conditions": [
             {
@@ -230,8 +222,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        2016,
-        -120
+        2576,
+        -128
       ],
       "parameters": {
         "method": "POST",
@@ -249,6 +241,123 @@
         "httpHeaderAuth": {
           "id": "8e4bLYteAM1T0RS5",
           "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "865c803f-2d79-4419-b946-049ce28fe4f8",
+      "name": "Webhook",
+      "webhookId": "82e409c7-867a-47e0-a6b5-060ddd80ae14",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        -176
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "v1/literature/arxiv-search",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "a83e55b1-f7c3-44e0-a665-04ea71d4d088",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1136,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "11933f9b-a3ee-438c-b830-583cdc183527",
+              "leftValue": "={{ $('Przygotuj zapytania').first().json.isApi }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "07d8e189-0259-47cd-aaaf-8c5516d00478",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1408,
+        -240
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: $('Raport literatury').first().json.status, report_file: $('Raport literatury').first().json.fname, unique: $('Raport literatury').first().json.unique, failed: $('Raport literatury').first().json.failed, pubs: $('Raport literatury').first().json.pubs }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "4f64d1f9-0536-433a-a7d2-4e6a32b14bc1",
+      "name": "Dane poprawne",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f817cd08-19d5-41a3-8773-a9cb7fd0ed6b",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "1adf54f3-7046-4cfc-8184-24718b09d3c1",
+      "name": "Odpowiedz blad",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        440,
+        240
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'Blocker', error: $json.error || 'bad_request', detail: $json.detail || '' }) }}",
+        "options": {
+          "responseCode": 400
         }
       }
     }
@@ -269,7 +378,7 @@
       "main": [
         [
           {
-            "node": "Szukaj w arXiv",
+            "node": "Dane poprawne",
             "type": "main",
             "index": 0
           }
@@ -302,7 +411,7 @@
       "main": [
         [
           {
-            "node": "Pola wyboru",
+            "node": "If",
             "type": "main",
             "index": 0
           }
@@ -381,9 +490,57 @@
           }
         ]
       ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Przygotuj zapytania",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pola wyboru",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dane poprawne": {
+      "main": [
+        [
+          {
+            "node": "Szukaj w arXiv",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Odpowiedz blad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate"
   }
 }

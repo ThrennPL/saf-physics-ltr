@@ -107,6 +107,22 @@ def validate_capability_catalog(path: Path) -> list[str]:
     return errors
 
 
+def _declared_n8n_tool_ids(repo_root: Path) -> set[str]:
+    """Identyfikatory narzedzi n8n (webhook) zadeklarowane w tool_contract_index.json."""
+    try:
+        data = _load_json(repo_root / "mcp" / "tools" / "tool_contract_index.json")
+    except (OSError, json.JSONDecodeError):
+        return set()
+    tools = data.get("tools") if isinstance(data, dict) else None
+    if not isinstance(tools, list):
+        return set()
+    return {
+        str(tool["id"])
+        for tool in tools
+        if isinstance(tool, dict) and tool.get("id") and tool.get("endpoint")
+    }
+
+
 def validate_skill_catalog(path: Path, repo_root: Path) -> list[str]:
     errors: list[str] = []
     try:
@@ -119,6 +135,7 @@ def validate_skill_catalog(path: Path, repo_root: Path) -> list[str]:
     if not isinstance(skills, list) or not skills:
         return errors + ["skills must be a non-empty array"]
 
+    declared_tool_ids = _declared_n8n_tool_ids(repo_root)
     seen: set[str] = set()
     valid_status = {"active", "candidate"}
     for index, skill in enumerate(skills, start=1):
@@ -174,7 +191,7 @@ def validate_skill_catalog(path: Path, repo_root: Path) -> list[str]:
 
         for rel_path in skill.get("tool_implementations", []):
             tool_path = repo_root / str(rel_path)
-            if not tool_path.is_file():
+            if not tool_path.is_file() and str(rel_path) not in declared_tool_ids:
                 errors.append(f"{scope}.tool_implementations missing file: {rel_path}")
 
         for rel_path in skill.get("instructions", []):

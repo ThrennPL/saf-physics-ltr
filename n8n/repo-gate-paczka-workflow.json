@@ -8,26 +8,22 @@
       "type": "n8n-nodes-base.formTrigger",
       "typeVersion": 2.6,
       "position": [
-        0,
+        -272,
         0
       ],
       "parameters": {
         "formTitle": "Paczka przed gate",
         "formDescription": "Podaj folder badania (Badania/<temat>) i numer gate (1-4). Raport jest tylko do odczytu.",
-        "path": "repo-gate-paczka",
-        "responseMode": "onReceived",
         "formFields": {
           "values": [
             {
               "fieldLabel": "Temat badania",
-              "fieldType": "text",
-              "requiredField": true,
-              "placeholder": "T04-GR-PPN-Yukawa-Perihelion"
+              "placeholder": "T04-GR-PPN-Yukawa-Perihelion",
+              "requiredField": true
             },
             {
               "fieldLabel": "Gate",
               "fieldType": "dropdown",
-              "requiredField": true,
               "fieldOptions": {
                 "values": [
                   {
@@ -43,13 +39,12 @@
                     "option": "4"
                   }
                 ]
-              }
+              },
+              "requiredField": true
             }
           ]
         },
-        "options": {
-          "respondWhen": "responseNode"
-        }
+        "options": {}
       }
     },
     {
@@ -66,10 +61,16 @@
         "url": "http://host.docker.internal:8765/v1/gate/pack",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
-        "options": {},
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ topic: String($json['Temat badania']).trim(), gate: Number($json['Gate']) }) }}"
+        "jsonBody": "={{ JSON.stringify({ topic: $json.topic, gate: $json.gate }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
       },
       "credentials": {
         "httpHeaderAuth": {
@@ -157,7 +158,7 @@
         0
       ],
       "parameters": {
-        "jsCode": "const form = $(\"Formularz\").first().json;\nconst pack = $(\"Paczka gate\").first().json;\nconst checks = [\n  $(\"Kontrola lint_ltr\").first().json,\n  $(\"Kontrola taxonomy_guard\").first().json,\n  $(\"Kontrola pytest\").first().json,\n];\nconst sev = { OK: 0, Warning: 1, Blocker: 2 };\nconst all = [pack.status, ...checks.map(c => c.status)];\nconst status = all.reduce((h, s) => (sev[s] > sev[h] ? s : h), \"OK\");\nconst claims = pack.sources.claims_by_status;\nconst claimRows = Object.keys(claims).map(k => \"| \" + k + \" | \" + claims[k] + \" |\").join(\"\\n\") || \"| brak | 0 |\";\nconst missing = pack.artifacts.missing;\nconst qs = pack.markers.open_questions;\nconst qc = pack.markers.closed_questions;\nconst src = pack.artifacts.sources;\nconst artRows = pack.artifacts.required.map(a => \"| \" + a + \" | \" + (missing.includes(a) ? \"BRAK\" : \"obecny\") + \" | \" + src[a] + \" |\").join(\"\\n\");\nconst CHK = {\n  1: [\"Hipoteza i cel mierzalny\", \"Zakres i wykluczenia\", \"Plan badania\", \"Wariant badania (teoretyczna/eksperymentalna/computational)\", \"Zalozenia i uproszczenia jawnie opisane\", \"Definicje i oznaczenia kluczowe\"],\n  2: [\"Klasyfikacja danych\", \"Retencja i dostep\", \"Ryzyka z ownerem\", \"Parametry i warunki brzegowe opisane\", \"Plan walidacji wewnetrznej (analityczne lub benchmarki)\"],\n  3: [\"Reproducibility\", \"Niepewnosc i wrazliwosc\", \"Oddzielone wnioski od faktow\", \"Zbieznosc i stabilnosc numeryczna (jesli dotyczy)\", \"Replikacja wynikow (min. 2 warianty)\"],\n  4: [\"Akceptacje kompletne\", \"Wymagania raportowe\", \"Pelny zestaw artefaktow teoretycznych\"],\n}[pack.gate] || [];\nconst chkTxt = CHK.map(c => \"- [ ] \" + c + \" - do oceny przez czlowieka\").join(\"\\n\");\nconst actions = [];\nmissing.forEach(m => actions.push(\"| Blocker | Brak artefaktu \" + m + \" | [DO_UZUPELNIENIA] | [DO_UZUPELNIENIA] |\"));\nchecks.filter(c => c.status !== \"OK\").forEach(c => actions.push(\"| \" + c.status + \" | Kontrola \" + c.check + \" | [DO_UZUPELNIENIA] | [DO_UZUPELNIENIA] |\"));\nif (pack.sources.pending_preprints > 0) actions.push(\"| Warning | Preprinty do weryfikacji: \" + pack.sources.pending_preprints + \" | [DO_UZUPELNIENIA] | [DO_UZUPELNIENIA] |\");\nif (pack.markers.placeholders_total > 0) actions.push(\"| Warning | Znaczniki DO_UZUPELNIENIA: \" + pack.markers.placeholders_total + \" | [DO_UZUPELNIENIA] | [DO_UZUPELNIENIA] |\");\nif (qs.length > 0) actions.push(\"| Warning | Otwarte pytania Q-XXX (\" + qs.length + \"): \" + qs.join(\", \") + \" | [DO_UZUPELNIENIA] | [DO_UZUPELNIENIA] |\");\nconst actTxt = actions.length ? \"| Status | Pozycja | Owner | ETA |\\n|---|---|---|---|\\n\" + actions.join(\"\\n\") : \"Brak pozycji Warning/Blocker.\";\nconst ph = pack.markers.placeholders_top.map(p => \"| \" + p.file + \" | \" + p.count + \" |\").join(\"\\n\") || \"| brak | 0 |\";\nconst confidence = status === \"OK\" ? 0.8 : status === \"Warning\" ? 0.6 : 0.4;\nconst ts = new Date().toISOString();\nconst rows = checks.map(c => \"| \" + c.check + \" | \" + c.status + \" | \" + c.exit_code + \" |\").join(\"\\n\");\nconst details = checks.filter(c => c.status !== \"OK\").map(c => \"### \" + c.check + \"\\n\\n```\\n\" + String(c.stdout || \"\").trim().slice(0, 1200) + (c.stderr ? \"\\n[stderr] \" + String(c.stderr).trim().slice(0, 400) : \"\") + \"\\n```\").join(\"\\n\\n\");\nconst report = [\n  \"# Paczka przed Gate \" + pack.gate + \" - \" + pack.topic,\n  \"\",\n  \"- Data (UTC): \" + ts,\n  \"- Status roboczy: **\" + status + \"**\",\n  \"- Pewnosc: \" + confidence + \" (skala 0-1; ocena automatyczna, tylko kontrole formalne)\",\n  \"- Uwaga: raport nie jest decyzja gate i nie rekomenduje zatwierdzenia. Decyzje Gate 1/2/4 podejmuje czlowiek.\",\n  \"\",\n  \"## 1. Kontrole techniczne\",\n  \"\",\n  \"| Kontrola | Status | Kod wyjscia |\",\n  \"|---|---|---|\",\n  rows,\n  \"\",\n  details,\n  \"\",\n  \"## 2. Kompletnosc artefaktow (Gate \" + pack.gate + \")\",\n  \"\",\n  \"| Artefakt | Stan | Zrodlo wymagania |\",\n  \"|---|---|---|\",\n  artRows,\n  \"\",\n  \"Sprawdzana jest tylko obecnosc plikow, nie ich tresc.\",\n  \"\",\n  \"### Kryteria scenariusza (Checklista-Research-Gate) - ocena przez czlowieka\",\n  \"\",\n  chkTxt,\n  \"\",\n  \"## 3. Zrodla literatury\",\n  \"\",\n  \"| Status pozycji w logu | Liczba |\",\n  \"|---|---|\",\n  claimRows,\n  \"\",\n  \"- Preprinty oczekujace na weryfikacje (do_weryfikacji): \" + pack.sources.pending_preprints,\n  \"\",\n  \"## 4. Otwarte luki\",\n  \"\",\n  \"- Znaczniki DO_UZUPELNIENIA: \" + pack.markers.placeholders_total,\n  \"\",\n  \"| Plik | Liczba |\",\n  \"|---|---|\",\n  ph,\n  \"\",\n  \"- Otwarte Q-XXX (\" + qs.length + \"): \" + (qs.join(\", \") || \"brak\"),\n  \"- Zamkniete Q-XXX (\" + qc.length + \"): \" + (qc.join(\", \") || \"brak\"),\n  \"- Pytanie jest uznane za zamkniete, gdy linia z jego ID zawiera slowo zamkniete/zamknieto (heurystyka; [DO_UZUPELNIENIA] potwierdzenie).\",\n  \"\",\n  \"## 5. Dzialania korygujace (owner i ETA)\",\n  \"\",\n  actTxt,\n  \"\",\n  \"## 6. Podsumowanie\",\n  \"\",\n  pack.gate === 3 ? \"Gate 3: agent-conditional pass jest mozliwy tylko przy niskim ryzyku i statusie OK bez uwag krytycznych; ten raport go nie przyznaje.\" : \"\",\n  status === \"OK\" ? \"Brak krytycznych ryzykow formalnych.\" : status === \"Warning\" ? \"Ryzyka niekrytyczne: przejrzyj sekcje 3 i 4 przed decyzja.\" : \"Blocker: braki krytyczne (fail_closed) - eskalacja do Orkiestratora i czlowieka.\",\n  \"\",\n  \"## Pytania uzupelniajace\",\n  \"\",\n  \"- Q-001 (niski): czy raport ma uwzgledniac wynik process suite?\",\n  \"\",\n].join(\"\\n\");\nconst slug = pack.topic.replace(/[^A-Za-z0-9._-]/g, \"_\");\nconst fname = \"gate\" + pack.gate + \"-\" + slug + \"-\" + ts.replace(/[:.]/g, \"-\") + \".md\";\nreturn [{ json: { status, report, fname, confidence, topic: pack.topic, gate: pack.gate } }];"
+        "jsCode": "const pack = $(\"Paczka gate\").first().json;\nconst checks = [\n  $(\"Kontrola lint_ltr\").first().json,\n  $(\"Kontrola taxonomy_guard\").first().json,\n  $(\"Kontrola pytest\").first().json,\n];\nconst sev = { OK: 0, Warning: 1, Blocker: 2 };\nconst all = [pack.status, ...checks.map(c => c.status)];\nconst status = all.reduce((h, s) => (sev[s] > sev[h] ? s : h), \"OK\");\nconst claims = pack.sources.claims_by_status;\nconst claimRows = Object.keys(claims).map(k => \"| \" + k + \" | \" + claims[k] + \" |\").join(\"\\n\") || \"| brak | 0 |\";\nconst missing = pack.artifacts.missing;\nconst qs = pack.markers.open_questions;\nconst qc = pack.markers.closed_questions;\nconst src = pack.artifacts.sources;\nconst artRows = pack.artifacts.required.map(a => \"| \" + a + \" | \" + (missing.includes(a) ? \"BRAK\" : \"obecny\") + \" | \" + src[a] + \" |\").join(\"\\n\");\nconst CHK = {\n  1: [\"Hipoteza i cel mierzalny\", \"Zakres i wykluczenia\", \"Plan badania\", \"Wariant badania (teoretyczna/eksperymentalna/computational)\", \"Zalozenia i uproszczenia jawnie opisane\", \"Definicje i oznaczenia kluczowe\"],\n  2: [\"Klasyfikacja danych\", \"Retencja i dostep\", \"Ryzyka z ownerem\", \"Parametry i warunki brzegowe opisane\", \"Plan walidacji wewnetrznej (analityczne lub benchmarki)\"],\n  3: [\"Reproducibility\", \"Niepewnosc i wrazliwosc\", \"Oddzielone wnioski od faktow\", \"Zbieznosc i stabilnosc numeryczna (jesli dotyczy)\", \"Replikacja wynikow (min. 2 warianty)\"],\n  4: [\"Akceptacje kompletne\", \"Wymagania raportowe\", \"Pelny zestaw artefaktow teoretycznych\"],\n}[pack.gate] || [];\nconst chkTxt = CHK.map(c => \"- [ ] \" + c + \" - do oceny przez czlowieka\").join(\"\\n\");\nconst actions = [];\nmissing.forEach(m => actions.push(\"| Blocker | Brak artefaktu \" + m + \" | [DO_UZUPELNIENIA] | [DO_UZUPELNIENIA] |\"));\nchecks.filter(c => c.status !== \"OK\").forEach(c => actions.push(\"| \" + c.status + \" | Kontrola \" + c.check + \" | [DO_UZUPELNIENIA] | [DO_UZUPELNIENIA] |\"));\nif (pack.sources.pending_preprints > 0) actions.push(\"| Warning | Preprinty do weryfikacji: \" + pack.sources.pending_preprints + \" | [DO_UZUPELNIENIA] | [DO_UZUPELNIENIA] |\");\nif (pack.markers.placeholders_total > 0) actions.push(\"| Warning | Znaczniki DO_UZUPELNIENIA: \" + pack.markers.placeholders_total + \" | [DO_UZUPELNIENIA] | [DO_UZUPELNIENIA] |\");\nif (qs.length > 0) actions.push(\"| Warning | Otwarte pytania Q-XXX (\" + qs.length + \"): \" + qs.join(\", \") + \" | [DO_UZUPELNIENIA] | [DO_UZUPELNIENIA] |\");\nconst actTxt = actions.length ? \"| Status | Pozycja | Owner | ETA |\\n|---|---|---|---|\\n\" + actions.join(\"\\n\") : \"Brak pozycji Warning/Blocker.\";\nconst ph = pack.markers.placeholders_top.map(p => \"| \" + p.file + \" | \" + p.count + \" |\").join(\"\\n\") || \"| brak | 0 |\";\nconst confidence = status === \"OK\" ? 0.8 : status === \"Warning\" ? 0.6 : 0.4;\nconst ts = new Date().toISOString();\nconst rows = checks.map(c => \"| \" + c.check + \" | \" + c.status + \" | \" + c.exit_code + \" |\").join(\"\\n\");\nconst details = checks.filter(c => c.status !== \"OK\").map(c => \"### \" + c.check + \"\\n\\n```\\n\" + String(c.stdout || \"\").trim().slice(0, 1200) + (c.stderr ? \"\\n[stderr] \" + String(c.stderr).trim().slice(0, 400) : \"\") + \"\\n```\").join(\"\\n\\n\");\nconst report = [\n  \"# Paczka przed Gate \" + pack.gate + \" - \" + pack.topic,\n  \"\",\n  \"- Data (UTC): \" + ts,\n  \"- Status roboczy: **\" + status + \"**\",\n  \"- Pewnosc: \" + confidence + \" (skala 0-1; ocena automatyczna, tylko kontrole formalne)\",\n  \"- Uwaga: raport nie jest decyzja gate i nie rekomenduje zatwierdzenia. Decyzje Gate 1/2/4 podejmuje czlowiek.\",\n  \"\",\n  \"## 1. Kontrole techniczne\",\n  \"\",\n  \"| Kontrola | Status | Kod wyjscia |\",\n  \"|---|---|---|\",\n  rows,\n  \"\",\n  details,\n  \"\",\n  \"## 2. Kompletnosc artefaktow (Gate \" + pack.gate + \")\",\n  \"\",\n  \"| Artefakt | Stan | Zrodlo wymagania |\",\n  \"|---|---|---|\",\n  artRows,\n  \"\",\n  \"Sprawdzana jest tylko obecnosc plikow, nie ich tresc.\",\n  \"\",\n  \"### Kryteria scenariusza (Checklista-Research-Gate) - ocena przez czlowieka\",\n  \"\",\n  chkTxt,\n  \"\",\n  \"## 3. Zrodla literatury\",\n  \"\",\n  \"| Status pozycji w logu | Liczba |\",\n  \"|---|---|\",\n  claimRows,\n  \"\",\n  \"- Preprinty oczekujace na weryfikacje (do_weryfikacji): \" + pack.sources.pending_preprints,\n  \"\",\n  \"- Process Suite (\" + pack.process_suite.file + \"): \" + (pack.process_suite.present ? \"obecny, data pliku \" + pack.process_suite.modified : \"brak\") + \". Status i wnioski ocenia czlowiek; raport ich nie interpretuje.\",\n  \"\",\n  \"## 4. Otwarte luki\",\n  \"\",\n  \"- Znaczniki DO_UZUPELNIENIA: \" + pack.markers.placeholders_total,\n  \"\",\n  \"| Plik | Liczba |\",\n  \"|---|---|\",\n  ph,\n  \"\",\n  \"- Otwarte Q-XXX (\" + qs.length + \"): \" + (qs.join(\", \") || \"brak\"),\n  \"- Zamkniete Q-XXX (\" + qc.length + \"): \" + (qc.join(\", \") || \"brak\"),\n  \"- Pytanie jest uznane za zamkniete, gdy linia z jego ID zawiera slowo zamkniete/zamknieto (heurystyka; [DO_UZUPELNIENIA] potwierdzenie).\",\n  \"\",\n  \"## 5. Dzialania korygujace (owner i ETA)\",\n  \"\",\n  actTxt,\n  \"\",\n  \"## 6. Podsumowanie\",\n  \"\",\n  pack.gate === 3 ? \"Gate 3: agent-conditional pass jest mozliwy tylko przy niskim ryzyku i statusie OK bez uwag krytycznych; ten raport go nie przyznaje.\" : \"\",\n  status === \"OK\" ? \"Brak krytycznych ryzykow formalnych.\" : status === \"Warning\" ? \"Ryzyka niekrytyczne: przejrzyj sekcje 3 i 4 przed decyzja.\" : \"Blocker: braki krytyczne (fail_closed) - eskalacja do Orkiestratora i czlowieka.\",\n  \"\",\n  \"## Pytania uzupelniajace\",\n  \"\",\n  \"- Brak pytan automatycznych; pytania Q-XXX z badania sa w sekcji 4.\",\n  \"\",\n].join(\"\\n\");\nconst slug = pack.topic.replace(/[^A-Za-z0-9._-]/g, \"_\");\nconst fname = \"gate\" + pack.gate + \"-\" + slug + \"-\" + ts.replace(/[:.]/g, \"-\") + \".md\";\nreturn [{ json: { status, report, fname, confidence, topic: pack.topic, gate: pack.gate } }];"
       }
     },
     {
@@ -183,7 +184,6 @@
         0
       ],
       "parameters": {
-        "dataPropertyName": "data",
         "operation": "write",
         "fileName": "=/data/reports/{{$json.fname}}",
         "options": {}
@@ -196,7 +196,7 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 2.5,
       "position": [
-        1792,
+        2000,
         0
       ],
       "parameters": {
@@ -205,6 +205,169 @@
         "completionMessage": "={{ 'Status roboczy: ' + $('Raport gate').first().json.status + '. Raport: reports/' + $('Raport gate').first().json.fname }}",
         "options": {}
       }
+    },
+    {
+      "id": "11497a22-39a8-4d0f-be5e-317bdab97359",
+      "name": "Agents call",
+      "webhookId": "ca1d0a4e-cd1c-4b3d-b841-e7a4bb643635",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        -272,
+        -176
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "v1/gate/pack-run",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "0cb4897e-df02-4297-adf9-ce1e3a3ed74d",
+      "name": "Normalizuj Wejscie",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const inputData = $input.first().json;\nconst body = inputData.body || inputData;\nconst source = inputData.headers ? \"api\" : \"form\";\nconst topic = String(body.topic ?? body[\"Temat badania\"] ?? \"\").trim();\nconst rawGate = body.gate ?? body[\"Gate\"];\nconst gate = Number(rawGate);\nlet error = \"\";\nif (!topic) error = \"Brak parametru 'topic' (Temat badania).\";\nelse if (rawGate === undefined || rawGate === null || rawGate === \"\") error = \"Brak parametru 'gate' (1-4).\";\nelse if (!Number.isInteger(gate) || gate < 1 || gate > 4) error = \"Parametr 'gate' musi byc liczba calkowita 1-4.\";\nreturn [{ json: { valid: !error, error: error ? \"bad_request\" : \"\", detail: error, topic, gate, source } }];"
+      }
+    },
+    {
+      "id": "0f975f10-829d-41e4-a3fc-906d586ce0a5",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1760,
+        -80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0acbeb45-8a33-4045-b221-2680f7923467",
+              "leftValue": "={{ $('Normalizuj Wejscie').first().json.source }}",
+              "rightValue": "=api",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "b2ad034c-6f65-4e9d-ad51-92da8bb5363f",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2000,
+        -160
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ \n  JSON.stringify({\n    status: $('Raport gate').first().json.status,\n    confidence: $('Raport gate').first().json.confidence,\n    report_file: $('Raport gate').first().json.fname,\n    topic: $('Raport gate').first().json.topic,\n    gate: $('Raport gate').first().json.gate\n  }) \n}}",
+        "options": {}
+      }
+    },
+    {
+      "id": "5361591d-93ab-4227-997b-5f3e048210c7",
+      "name": "Dane poprawne",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "fdb2e3a3-b092-4c3a-bf3c-b5f5a0fa1ced",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "2b4e7190-ef21-4cfb-86ac-fb25b7897a74",
+      "name": "Paczka poprawna",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9563e9da-cf08-404d-b1b7-f20253b62281",
+              "leftValue": "={{ $json.artifacts !== undefined }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "725c4e17-a367-46c2-82ce-161aa8684e40",
+      "name": "Odpowiedz blad",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        880,
+        240
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'Blocker', error: $json.error || 'bad_request', detail: $json.detail || '' }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      }
     }
   ],
   "connections": {
@@ -212,7 +375,7 @@
       "main": [
         [
           {
-            "node": "Paczka gate",
+            "node": "Normalizuj Wejscie",
             "type": "main",
             "index": 0
           }
@@ -223,7 +386,7 @@
       "main": [
         [
           {
-            "node": "Kontrola lint_ltr",
+            "node": "Paczka poprawna",
             "type": "main",
             "index": 0
           }
@@ -289,7 +452,83 @@
       "main": [
         [
           {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agents call": {
+      "main": [
+        [
+          {
+            "node": "Normalizuj Wejscie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizuj Wejscie": {
+      "main": [
+        [
+          {
+            "node": "Dane poprawne",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Zakonczenie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dane poprawne": {
+      "main": [
+        [
+          {
+            "node": "Paczka gate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Odpowiedz blad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paczka poprawna": {
+      "main": [
+        [
+          {
+            "node": "Kontrola lint_ltr",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Odpowiedz blad",
             "type": "main",
             "index": 0
           }
@@ -298,6 +537,7 @@
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate"
   }
 }

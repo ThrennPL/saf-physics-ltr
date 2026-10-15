@@ -1,0 +1,241 @@
+{
+  "name": "Repo - dopisanie kandydatow arXiv do logu (API)",
+  "nodes": [
+    {
+      "id": "810b2241-5909-45fc-915b-7f8e17ec09f0",
+      "name": "Webhook",
+      "webhookId": "8b2868c1-6389-4930-adac-8d35ea796638",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "v1/literature/log-candidates",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "68e2235a-759c-4e52-9d44-57082b1e23a3",
+      "name": "Normalizuj wejscie",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst body = input.body || input;\nconst fail = (detail) => [{ json: { valid: false, error: \"bad_request\", detail } }];\nconst topic = String(body.topic ?? \"\").trim();\nconst approvedBy = String(body.approved_by ?? \"\").trim();\nconst selected = body.selected;\nif (!topic) return fail(\"Brak parametru 'topic'.\");\nif (approvedBy.length < 2) return fail(\"Brak parametru 'approved_by' (kto zatwierdzil wybor).\");\nif (!Array.isArray(selected) || selected.length < 1 || selected.length > 20) {\n  return fail(\"Parametr 'selected' musi byc lista 1-20 publikacji z wyniku search_arxiv_literature.\");\n}\nconst publications = selected.map(p => ({\n  id: String(p.id ?? \"\"),\n  title: String(p.title ?? \"\"),\n  authors: String(p.authors ?? \"\"),\n  date: String(p.date ?? \"\"),\n  url: String(p.url ?? \"\"),\n}));\nreturn [{ json: { valid: true, payload: { topic, publications, approved_by: approvedBy } } }];"
+      }
+    },
+    {
+      "id": "478592aa-f092-4248-8fe0-c81389713fb6",
+      "name": "Dane poprawne",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "02438f3a-641d-4acd-810c-86c6fdccf626",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "c5f94545-1018-4f81-a460-26017a2f60d7",
+      "name": "Dopisz do logu",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        672,
+        -100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8765/v1/literature/log",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8e4bLYteAM1T0RS5",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "2ab1fc7b-e170-4988-8613-2069713b1b0e",
+      "name": "Zapis udany",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        -100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b8e03b04-ecf7-405c-8b1b-c63b562f7d96",
+              "leftValue": "={{ $json.error === undefined }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "9b8d0c30-a816-47a6-83ca-05ed57867eeb",
+      "name": "Odpowiedz OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1120,
+        -200
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: $json.status, added: $json.added, skipped: $json.skipped, file: $json.file }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "be616fe3-4690-466e-9f20-bc1a52f17798",
+      "name": "Odpowiedz blad",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1120,
+        100
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'Blocker', error: $json.error || 'bad_request', detail: $json.detail || '' }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalizuj wejscie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizuj wejscie": {
+      "main": [
+        [
+          {
+            "node": "Dane poprawne",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dane poprawne": {
+      "main": [
+        [
+          {
+            "node": "Dopisz do logu",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Odpowiedz blad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dopisz do logu": {
+      "main": [
+        [
+          {
+            "node": "Zapis udany",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zapis udany": {
+      "main": [
+        [
+          {
+            "node": "Odpowiedz OK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Odpowiedz blad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
