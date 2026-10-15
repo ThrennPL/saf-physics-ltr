@@ -208,6 +208,8 @@ folderu `TheoreticalMD` w UI n8n (karta workflow -> Move). Credentiale (Header A
 tokenem runnera) tworzy sie tylko w UI. Do `n8n/*.json` trafiaja wylacznie workflow
 z zakresu repo; pozostale (np. YouTube/RSS, Telegram) zostaja poza repo, a `check`
 zglasza je jako WARNING.
+Starszy workflow "Repo QA - reczne kontrole" zostal zarchiwizowany w n8n (do przywrocenia),
+a jego eksport usunieto z repozytorium.
 
 ### Workflow w repo (`n8n/`)
 

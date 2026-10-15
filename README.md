@@ -130,49 +130,31 @@ python tools/lint_ltr.py --fail-on-warning
 
 ## Local QA Runner for n8n
 
-The allowlisted runner exposes only `lint_ltr`, `taxonomy_guard`, and the repository
-pytest suite; it does not accept shell commands, file paths, or script arguments
-from HTTP callers. Keep the repository outside the n8n container and configure a
-random `QA_RUNNER_TOKEN` of at least 32 characters. Bind to `0.0.0.0` only when
-Docker must reach the host service, and restrict inbound access to port 8765 with
-the host firewall.
+The allowlisted runner exposes only `lint_ltr`, `taxonomy_guard`, the repository pytest
+suite and the read-only/append-only endpoints listed below. It does not accept shell
+commands, file paths, or script arguments from HTTP callers. Keep the repository
+outside the n8n container and configure a random `QA_RUNNER_TOKEN` of at least 32
+characters. Bind to `0.0.0.0` only when Docker must reach the host service, and
+restrict inbound access to port 8765 with the host firewall.
 
 ```powershell
 $env:QA_RUNNER_TOKEN = "<random token of at least 32 characters>"
 python tools/qa_runner_service.py --host 0.0.0.0 --port 8765
 ```
 
-In n8n, create a Header Auth credential with header name `Authorization` and value
-`Bearer <same token>`. Use `http://host.docker.internal:8765/v1/checks` for
-the check list or `POST http://host.docker.internal:8765/v1/checks/lint_ltr`,
-`POST http://host.docker.internal:8765/v1/checks/taxonomy_guard`, and
-`POST http://host.docker.internal:8765/v1/checks/pytest` to run checks.
-The runner uses the current repository root, times out after 120 seconds, and caps
-captured output. Keep the service local and stop it after use.
-
-Other endpoints (all validated, no shell access): `POST /v1/literature/arxiv` (search),
-`POST /v1/literature/log` (append candidates to a research log, optional `approved_by`)
-and `POST /v1/gate/pack` (read-only pre-gate report).
+In n8n, create a Header Auth credential (header name `Authorization`, value
+`Bearer <same token>`). Runner address from the container:
+`http://host.docker.internal:8765`.
+Endpoints: `GET /v1/checks`, `POST /v1/checks/{lint_ltr|taxonomy_guard|pytest}`,
+`POST /v1/literature/arxiv` (search), `POST /v1/literature/log` (append candidates to a
+research log), `POST /v1/gate/pack` (read-only report). Checks time out after 120
+seconds and captured output is capped. Keep the service local and stop it after use.
 
 ### n8n workflow sync via Public API
 
 Create an API key in n8n (Settings -> n8n API) and store it outside the repository,
 e.g. as a user environment variable (`N8N_LOCAL_API_KEY_TMD`) or in `.env`. Never
 paste it into chats or commit it.
-
-The manual workflow "Repo QA - raport (reczny)" (`n8n/repo-qa-raport-workflow.json`,
-ID `Ku19rXEPiP6PkDWu`) runs the three checks; a status other than `OK` appends an entry
-to `qa-alerts.log` in the n8n files mount (`/data` in the container).
-
-It also writes a Polish Markdown report to
-`reports/qa-<timestamp>.md` in the n8n files mount (`D:\n8n-files\reports`). It is
-not scheduled or published.
-
-The older "Repo QA -
-ręczne kontrole" was archived in n8n (restorable) and its export removed from the repo.
-
-Sync with `tools/n8n_sync.py` (reads `N8N_API_KEY` / `N8N_LOCAL_API_KEY_TMD`, refuses
-to write or push files that look like they contain secrets):
 
 ```powershell
 python tools/n8n_sync.py list
@@ -181,42 +163,59 @@ python tools/n8n_sync.py push Ku19rXEPiP6PkDWu n8n/repo-qa-raport-workflow.json
 python tools/n8n_sync.py check   # read-only: compare n8n with n8n/*.json (nodes, connections); exit 1 on mismatch
 ```
 
-The public API does not manage folders: after creating a workflow, move it to the
-`TheoreticalMD` folder in the n8n UI (workflow card -> Move). Credentials (Header
-Auth with the runner token) are managed in the UI only.
+`tools/n8n_sync.py` (reads `N8N_API_KEY` / `N8N_LOCAL_API_KEY_TMD`) refuses to write or
+push files that look like they contain secrets. The public API does not manage
+folders: after creating a workflow, move it to the `TheoreticalMD` folder in the n8n UI
+(workflow card -> Move). Credentials (Header Auth with the runner token) are managed in
+the UI only. Only workflows within the repository scope are kept in `n8n/*.json`; others
+(e.g. YouTube/RSS, Telegram) stay outside the repo and `check` reports them as WARNING.
+The older "Repo QA - reczne kontrole" was archived in n8n (restorable) and its export
+was removed from the repo.
 
-Literature review workflow "Przeglad literatury arXiv (reczny)" (ID `lS7H9QuTFx6hXuJm`,
-export `n8n/repo-arxiv-przeglad-workflow.json`): a form takes the task keywords
-(one phrase per line, max 5), arXiv categories and max results per phrase, then calls the
-runner endpoint `POST /v1/literature/arxiv` (strict validation, no shell) and writes a
-Polish report to `D:\n8n-files\reports\arxiv-<timestamp>.md`. Results are preprints
-and are not added to any `Cross-Reference-Log-LTR.md` automatically.
-After the report, a second form page ("Wybor publikacji") lists all unique results as
-checkboxes plus a research topic (folder name under `Badania/`, e.g.
-`T04-GR-PPN-Yukawa-Perihelion`); the selection is saved as
-`reports/arxiv-wybor-<timestamp>.json` (status `do_weryfikacji`). With a valid topic and
-1-20 selected items the workflow calls runner endpoint `POST /v1/literature/log`, which
-only appends a "Kandydaci literatury z arXiv" section (preprint, `do_weryfikacji`) to
-`Badania/<topic>/Cross-Reference-Log-LTR.md`; it never edits existing text, skips IDs
-already present, and does not touch the claim -> source table.
-Run the test form once per "Execute workflow" and use a single browser tab.
+### Workflows in the repo (`n8n/`)
 
-Workflow "Repo - paczka przed gate (reczny)" (export `n8n/repo-gate-paczka-workflow.json`):
-a form takes a research topic and gate number (1-4). The read-only runner endpoint
-`POST /v1/gate/pack` reports required artifacts present/missing, literature log status,
-`DO_UZUPELNIENIA` counts and open vs closed `Q-XXX` identifiers (a question counts as closed when a line with its ID contains "zamkniete"/"zamknieto"; only open ones raise a Warning); the workflow adds lint_ltr,
-taxonomy_guard and pytest checks and writes a Polish report
-`reports/gate<N>-<topic>-<timestamp>.md` (status OK/Warning/Blocker, confidence 0-1).
-The report never recommends approving a gate; for Gate 3 it only notes the
-agent-conditional pass rule. Required artifacts per gate come from
-`Dokumentacja/Artefakty-Wymagania.md` (domain configuration `GATE_ARTIFACT_SOURCES`; each
-item lists its source). Only file presence is checked; scenario criteria from
-`Checklista-Research-Gate` are listed for human assessment, and each Warning/Blocker has
-owner/ETA columns (DO_UZUPELNIENIA).
-The report also notes whether `Raport-Process-Suite-<Txx>.md` exists and its file date (informational only; it does not change the status and its results are not interpreted).
+- **Repo QA - raport (reczny)** (`repo-qa-raport-workflow.json`, ID `Ku19rXEPiP6PkDWu`):
+  runs the three checks; a status other than `OK` appends an entry to `qa-alerts.log`
+  in the n8n files mount (`/data` in the container) and a Polish report is written to
+  `reports/qa-<timestamp>.md` (`D:\n8n-files\reports`). Not scheduled or published.
+- **Przeglad literatury arXiv (reczny)** (`repo-arxiv-przeglad-workflow.json`,
+  ID `lS7H9QuTFx6hXuJm`): a form takes the task keywords (one phrase per line, max 5),
+  arXiv categories and max results per phrase, calls `POST /v1/literature/arxiv` and
+  writes a report to `reports/arxiv-<timestamp>.md`. Results are preprints. A second
+  form page ("Wybor publikacji") lists the unique results as checkboxes plus a research
+  topic (folder under `Badania/`, e.g. `T04-GR-PPN-Yukawa-Perihelion`); the selection is
+  saved to `reports/arxiv-wybor-<timestamp>.json` (status `do_weryfikacji`), and with a
+  valid topic and 1-20 selected items `POST /v1/literature/log` is called. It only
+  appends a "Kandydaci literatury z arXiv" section to
+  `Badania/<topic>/Cross-Reference-Log-LTR.md`: it never edits existing text, skips IDs
+  already present and does not touch the claim -> source table. Run the test form once
+  per "Execute workflow" and use a single browser tab.
+- **Repo - paczka przed gate (reczny)** (`repo-gate-paczka-workflow.json`,
+  ID `FwgFTYrcMBI8tuQR`): a form takes a research topic and gate number (1-4). The
+  read-only endpoint `POST /v1/gate/pack` reports required artifacts present/missing,
+  literature log status, `DO_UZUPELNIENIA` counts and open vs closed `Q-XXX`
+  identifiers (a question counts as closed when a line with its ID contains
+  "zamkniete"/"zamknieto"; only open ones raise a Warning). The workflow adds lint_ltr,
+  taxonomy_guard and pytest checks and writes a Polish report
+  `reports/gate<N>-<topic>-<timestamp>.md` (status OK/Warning/Blocker, confidence 0-1).
+  The report never recommends approving a gate; for Gate 3 it only notes the
+  agent-conditional pass rule. Required artifacts per gate come from
+  `Dokumentacja/Artefakty-Wymagania.md` (domain configuration `GATE_ARTIFACT_SOURCES`,
+  each item lists its source). Only file presence is checked; scenario criteria from
+  `Checklista-Research-Gate` are listed for human assessment, and each Warning/Blocker
+  has owner/ETA columns (DO_UZUPELNIENIA). The report also notes whether
+  `Raport-Process-Suite-<Txx>.md` exists and its file date (informational only: it does
+  not change the status and its results are not interpreted).
+- **Repo - dopisanie kandydatow arXiv do logu (API)**
+  (`repo-arxiv-log-kandydatow-workflow.json`, ID `RdcYApAjxCWV5eF8`): webhook for agents
+  (tool `log_arxiv_candidates`).
+- **n8n - Testowy workflow** (`n8n-testowy-workflow.json`): example and connectivity
+  test (webhook `/healthz`).
 
-Agent tool webhooks (declared in `mcp/tools/tool_contract_index.json`, section `tools`;
-the workflow must be active, the runner must be running with `QA_RUNNER_TOKEN`):
+### Agent tool webhooks
+
+Tools are declared in `mcp/tools/tool_contract_index.json` (section `tools`); the
+workflow must be active and the runner must be running with `QA_RUNNER_TOKEN`:
 
 | Tool id | Webhook (POST, JSON) | Workflow export |
 |---|---|---|
@@ -226,24 +225,26 @@ the workflow must be active, the runner must be running with `QA_RUNNER_TOKEN`):
 | `log_arxiv_candidates` | `/webhook/v1/literature/log-candidates` | `n8n/repo-arxiv-log-kandydatow-workflow.json` |
 
 Invalid input returns HTTP 400 with `{"status":"Blocker","error":...,"detail":...}`.
-`search_arxiv_literature` only returns candidates (`pubs`); the choice belongs to a human.
-`log_arxiv_candidates` appends the selected items (full objects from `pubs`) to the
-topic's `Cross-Reference-Log-LTR.md`; `approved_by` (the person who chose) is required and
-recorded in the log. Duplicates are skipped (status Warning), existing text is never edited.
+`search_arxiv_literature` only returns candidates (`pubs`); the choice belongs to a
+human. `log_arxiv_candidates` appends the selected items (full objects from `pubs`) to
+the topic's `Cross-Reference-Log-LTR.md`; `approved_by` (the person who made the choice)
+is required and recorded in the log. Duplicates are skipped (status Warning), existing
+text is never edited.
 
-Docker notes: the container uses the local image `n8n-tmd:local`
-(`docker build -t n8n-tmd:local n8n/docker`, adds `youtube-transcript`; run with
-`NODE_FUNCTION_ALLOW_EXTERNAL=youtube-transcript`). `n8n start --tunnel` is not available
-in current n8n; for Telegram Trigger use a Cloudflare Quick Tunnel container
-(`cloudflare/cloudflared`) and set `WEBHOOK_URL` to the tunnel URL plus `N8N_PROXY_HOPS=1`
-on the n8n container. Quick Tunnel URLs change on restart; stop the tunnel after use.
+### Docker, tunnel and environment restore
 
-The export `n8n/n8n-testowy-workflow.json` is a connectivity example (webhook `/healthz`).
-
-Rebuilding n8n from scratch: create the Header Auth credential (runner token) in the UI,
-then `python tools/n8n_sync.py restore n8n` creates all missing workflows from `n8n/*.json`
-(new IDs; reselect the credential in HTTP nodes if needed), and move them to `TheoreticalMD`. The test form
-URL uses the webhook ID (`/form-test/<webhookId>`), not the `path` value.
+- The n8n container uses the local image `n8n-tmd:local`
+  (`docker build -t n8n-tmd:local n8n/docker`; adds `youtube-transcript`, run with
+  `NODE_FUNCTION_ALLOW_EXTERNAL=youtube-transcript`).
+- `n8n start --tunnel` is not available in current n8n. For Telegram Trigger use a
+  Cloudflare Quick Tunnel container (`cloudflare/cloudflared`) and set `WEBHOOK_URL`
+  to the tunnel URL plus `N8N_PROXY_HOPS=1` on the n8n container. Quick Tunnel URLs
+  change on restart; stop the tunnel when it is not needed.
+- Rebuilding n8n from scratch: create the Header Auth credential (runner token) in the
+  UI, then `python tools/n8n_sync.py restore n8n` creates all missing workflows from
+  `n8n/*.json` (new IDs; reselect the credential in HTTP nodes if needed), and finally
+  move them to `TheoreticalMD`. The test form URL uses the webhook ID
+  (`/form-test/<webhookId>`), not the `path` value.
 
 ## ArXiv Cross-Reference
 ```bash
